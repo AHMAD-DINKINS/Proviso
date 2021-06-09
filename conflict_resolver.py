@@ -20,7 +20,7 @@ class ConflictResolver:
 
 
     #res = [x for x in range(len(lst)) if lst[x] == 10]
-    def addSamples(self, fvs:List[FeatureVector]):
+    def addSamplesAndResolveConflicts(self, fvs:List[FeatureVector]):
         
         uniquefvs:List[FeatureVector] = self.removeDuplicates(fvs)
         #TODO: move this to constructor
@@ -29,26 +29,40 @@ class ConflictResolver:
             return
         #resolve conflict
         table ={}
-        for s in self.samples:
-            if  not s in table:
-                table[s] = s.counterexampleLabel
+        for fv in uniquefvs:
+            if  not fv in table:
+                table[fv] = fv.counterexampleLabel
             else:
                 raise Exception( "conflict already in existing samples -- this cannot happen error!")
+        #TODO: no need for table here
+        toAdd= []
+        
+        for (sfv, label) in table.items():
+            match = False
+            for s in self.samples:
+                if s == sfv:
+                    match= True
+                    if s.counterexampleLabel == True and label:
+                        s.counterexampleLabel = True
+                    elif s.counterexampleLabel == True and not label:
+                        print("how rare is this case? ")
+                        s.counterexampleLabel = False
+                    elif s.counterexampleLabel == False:
+                        s.counterexampleLabel = False
+            if not match:
+                    toAdd.append(sfv)
+        
+        for ffv in toAdd:
+            self.samples.append(ffv)
 
-        for fv in uniquefvs:
-            if fv in table:
-                table[fv] = False
-            else:
-                table[fv] = fv.counterexampleLabel
+        # for(fv,label) in table:
+        #     fv.counterexampleLabel = label
+        #     self.samples.append(fv)
 
-        for(fv,label) in table:
-            fv.counterexampleLabel = label
-            self.samples.append(fv)
+        
 
-        pass
-
-    def getSamples():
-        pass
+    def getSamples(self):
+        return list(self.samples)
 
 
 

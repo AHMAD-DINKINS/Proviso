@@ -1,4 +1,4 @@
-import itertools
+import command_runner
 import os
 from precis_feature import PrecisFeature
 from z3 import *
@@ -29,8 +29,8 @@ class Problem:
         
         cmd = observerExtractor + ' ' + self.sln + ' ' + self.projectName + ' ' + self.testFileName + ' ' + PUTName + ' ' + outputFile + ' ' +mode
         print(cmd)
-        os.system(cmd)
-
+        output = command_runner.runCommand(cmd)
+        
     # Read the output file and parse the observer methods
     def ReadObserversFromFile(self, outputFile):
         assert (os.path.exists(outputFile)), "file with observers should exists"

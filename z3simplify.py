@@ -24,25 +24,26 @@ import shell
 from z3 import *
 
 
-def simplify(intVariables, boolVariables, precondition):
+def simplify(intVariables, boolVariables, precondition:str):
     set_option(max_args = 10000000, max_lines = 1000000, max_depth = 10000000, max_visited = 1000000)
     set_option(html_mode=False)
     set_fpa_pretty(flag=False)
     # print precondition
     
-    intVars = [ Int(var) for var in intVariables]
-    boolVars = [ Bool(var) for var in boolVariables]
+    #intVars = [ Int(var) for var in intVariables]
+    #boolVars = [ Bool(var) for var in boolVariables]
     
-    declareInts = "\n".join([ "(declare-const " + var + " Int)" for var in intVariables ])
-    declareBools = "\n".join([ "(declare-const " + var + " Bool)" for var in boolVariables ])
-    stringToParse = "\n".join([declareInts,  declareBools, "( assert " + precondition + ")"])
-    
+    #declareInts = "\n".join([ "(declare-const " + var + " Int)" for var in intVariables ])
+    #declareBools = "\n".join([ "(declare-const " + var + " Bool)" for var in boolVariables ])
+    #stringToParse = "\n".join([declareInts,  declareBools, "( assert " + precondition + ")"])
+    stringToParse =  "( assert " + precondition + ")"
+    declMap = { f.varName : f.varZ3 for f in intVariables+boolVariables}
     #logger = logging.getLogger("Framework.z3Simplify")
     
     #logger.info("############ z3 program")
     #logger.info("############ " + stringToParse)
     
-    expr = parse_smt2_string(stringToParse)
+    expr = parse_smt2_string(stringToParse, decls=declMap)
     
     g  = Goal()
     g.add(expr)

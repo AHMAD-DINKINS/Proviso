@@ -1,3 +1,4 @@
+from feature_vector import FeatureVector
 import subprocess
 import sys
 import re
@@ -17,27 +18,40 @@ from external_learner import ExternalLearner
 import shell
 from typing import List, Tuple
 import shell
-
+import command_runner
 #'-I 1', '-m 1'
 class DTLearner(ExternalLearner):
     def __init__(self, name:str, binary:str, parameters:List[str], tempLocation:str, \
     intVariables:Tuple[PrecisFeature], boolVariables:Tuple[PrecisFeature]): 
         
-        fullPathtoBinary: str = os.path.abspath(binary)
-        assert (os.path.exists(fullPathtoBinary)), "check that location to binary exists"
-        fullNestedPathDir = os.path.abspath(tempLocation)
-        if not os.path.exists(fullNestedPathDir):
-            os.makedirs(fullNestedPathDir)
-        self.fullPathLocation = fullNestedPathDir
+        self.fullPathtoBinary :str = os.path.abspath(binary)
+        assert (os.path.exists(self.fullPathtoBinary)), "check that location to binary exists"
+        self.fullPathLocation :str = os.path.abspath(tempLocation)
+        if not os.path.exists(self.fullPathLocation):
+            os.makedirs(self.fullPathLocation)
         
+        self.parameters= parameters
         ExternalLearner.__init__(self, name,intVariables,boolVariables )
 
         
 
-    def generateInputFiles(self):
-        pass
+    def generateInputFiles(self, dataPoints:List[FeatureVector]):
+        self.writeDataFile(dataPoints)
+    
+    def writeDataFile(self,dataPoints:List[FeatureVector] ):
+        try:
+            # change to shell.writeFile
+            with open(os.path.join(self.fullPathLocation, 'pre.data'), 'wt') as f_out:
+                csv_out = csv.writer(f_out)
+                for item in dataPoints:
+                    csv_out.writerow(item.values+(self.pythonToCSData(item.counterexampleLabel),))
+        except Exception as e:
+            raise Exception(str(e) + ": " + "error creating data file line 49, dtlearner.py")
+
 
     def runLearner(self):
+        command_runner.runCommand(self.set_c50_args())
+        output = self.readResults()
         pass
 
     def generateInputLanguageFile(self, nameOfFile:str):
@@ -81,7 +95,63 @@ class DTLearner(ExternalLearner):
         names_file += '\nprecondition:    true,false.'
         return names_file
     
-    # def writeNamesFile(self):
+
+    # threshold must be passed thtough learnerParameter: -z 80
+    def set_c50_args(self):
+        result = " ".join([self.fullPathtoBinary ,
+                            " ".join(self.parameters)+ " "+ self.fullPathLocation+'/pre' ])
+        return  result
+
+
+    def runLearner(self):
+        command_runner.runCommand(self.set_c50_args())
+        output = self.readResults()
+        return output
+        
+        
+
+    def parse_tree(self, tree):
+        try:
+            if (tree['children'] is None):
+                return '  ' + str(tree['classification']).strip().lower() + ' '
+
+            elif (len(tree['children']) == 2):
+                # for parsing bools
+                if 'partition' in tree:
+                    node =  tree['attribute'] 
+                else:
+                    node = '( <= ' + tree['attribute'] + ' ' + str(tree['cut']).replace(".0", "") + ' )'
+                
+                left = self.parse_tree(tree['children'][0]).strip()
+                right = self.parse_tree(tree['children'][1]).strip()
+
+                return  '(or   ( and ' +   node  + ' ' + left + ' )  ( and  ( not ' + node + ') ' + right + ' ))'
+                # " (" + node + " && (" + left.strip() + ")) || ((!" + node + ") && (" + right.strip() + ")) "
+
+
+            else:
+                shell.printExceptionAndExit(e, "Parsing JSON File")
+
+        except Exception as e:
+            shell.printExceptionAndExit(e, "Parsing JSON File")
+
+
+    def get_pre_from_json(self, path):
+        try:
+            precondition = "true"
+            with open(path) as json_file:
+                tree = json.load(json_file)
+                precondition = self.parse_tree(tree)
+
+            return precondition
+        except Exception as e:
+            shell.printExceptionAndExit(e, "Cannot open JSON File")
+
+
+    def readResults(self):
+        return self.get_pre_from_json(self.fullPathLocation + '/pre.json')
+
+        # def writeNamesFile(self):
     #     try:
     #         coeff_combination = self.make_linear_combination(len(self.intVariables), self.intLow, self.intHigh)
     #         names_file = 'precondition.'
@@ -143,83 +213,14 @@ class DTLearner(ExternalLearner):
     #         shell.printExceptionAndExit(e, "Creating Names File")
 
 
-    def writeDataFile(self):
-        try:
-            # change to shell.writeFile
-            with open(os.path.join(self.tempLocation, 'pre.data'), 'wb') as f_out:
-                csv_out = csv.writer(f_out)
-                for item in self.dataPoints:
-                    csv_out.writerow(item)
-        except Exception as e:
-            shell.printExceptionAndExit(e, "Creating Data File")
+    
 
 
-    def generateFiles(self):
-        shell.resetFilesByRegex(self.tempLocation, 'pre\.*')
-        # self.writeNamesFile()
-        self.writePrefixNamesFile()
-        self.writeDataFile()
-
-
-
-
-
-    # threshold must be passed thtough learnerParameter: -z 80
-    def set_c50_args(self):
-        result = " ".join([shell.sanitizePath(self.binary, "win"), '-I 1', '-m 1',
-                            self.parameters, '-f', shell.sanitizePath(self.tempLocation + '/pre', "win")])
-        return  result
-
-
-    def runLearner(self):
-        shell.runCommand(self.set_c50_args())
-        return self.readResults()
-        
-        
-        
-
-    def parse_tree(self, tree):
-        try:
-            if (tree['children'] is None):
-                return '  ' + str(tree['classification']).strip().lower() + ' '
-
-            elif (len(tree['children']) == 2):
-                # for parsing bools
-                if 'partition' in tree:
-                    node =  tree['attribute'] 
-                else:
-                    node = '( <= ' + tree['attribute'] + ' ' + str(tree['cut']).replace(".0", "") + ' )'
-                
-                left = self.parse_tree(tree['children'][0]).strip()
-                right = self.parse_tree(tree['children'][1]).strip()
-
-                return  '(or   ( and ' +   node  + ' ' + left + ' )  ( and  ( not ' + node + ') ' + right + ' ))'
-                # " (" + node + " && (" + left.strip() + ")) || ((!" + node + ") && (" + right.strip() + ")) "
-
-
-            else:
-                shell.printExceptionAndExit(e, "Parsing JSON File")
-
-        except Exception as e:
-            shell.printExceptionAndExit(e, "Parsing JSON File")
-
-
-    def get_pre_from_json(self, path):
-        try:
-            precondition = "true"
-            with open(path) as json_file:
-                tree = json.load(json_file)
-                precondition = self.parse_tree(tree)
-
-            return precondition
-        except Exception as e:
-            shell.printExceptionAndExit(e, "Cannot open JSON File")
-
-
-    def readResults(self):
-        return self.get_pre_from_json(shell.sanitizePath(self.tempLocation + '/pre.json', "win"))
-
-
+    # def generateFiles(self):
+    #     shell.resetFilesByRegex(self.tempLocation, 'pre\.*')
+    #     # self.writeNamesFile()
+    #     self.writePrefixNamesFile()
+    #     self.writeDataFile()
 
 
 #test

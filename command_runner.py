@@ -27,5 +27,6 @@ def runCommand(args):
         print('OSError > ', e.filename)       
         raise OSError
     except:
+        print(e)
         print('Error > ', sys.exc_info()[0])
         raise OSError

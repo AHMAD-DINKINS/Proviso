@@ -1,3 +1,4 @@
+from feature_vector import FeatureVector
 import time
 
 import reviewData
@@ -8,7 +9,7 @@ from typing import List, Tuple
 class  ExternalLearner:
     def __init__(self, name:str, intVars:Tuple[PrecisFeature], boolVars: Tuple[PrecisFeature]):
         self.name = name
-        self.dataPoints = set()
+        self.dataPoints = []
         self.boolVariables = boolVars
         self.intVariables = intVars
         self.time  = 0.0
@@ -24,12 +25,17 @@ class  ExternalLearner:
     def generateInputLanguageFiles(self):
         pass
 
-    #conflictResolver should so this code
-    def setDataPoints(self, dataPoints = set()):
-        self.dataPoints = dataPoints
-        #remove conflicts
-        self.dataPoints = reviewData.filterDataPointConflicts(self.dataPoints)
+    def pythonToCSData(self, dataValue):
+        if dataValue:
+            return "true"
+        elif not (dataValue):
+            return "false"
+        else:
+            return dataValue
 
+        
+    def generateInputFiles(self,dataPoints):
+        pass
 
 
     def runLearner(self):
@@ -37,23 +43,20 @@ class  ExternalLearner:
 
     def learn(self, dataPoints, simplify=True):
         self.time = 0.0
-        start_time = time.time()
-
-        self.setDataPoints(dataPoints)
         
-        self.generateInputFiles()
+
+        #self.setDataPoints(dataPoints)
+        result =""
+
+        self.generateInputFiles(dataPoints)
+        start_time = time.time()
         result = self.runLearner()
-        restoredResults =""
+        
         if result.find("No Solution") == -1:
             if simplify:
                 result = z3simplify.simplify(self.intVariables, self.boolVariables, result)
 
-            #print "******  Synthesized Predicate Round Result(Before Restoring): ", result
-
-            #restoredResults = self.restoreVariables(result)
-        else:
-            restoredResults = result
         
         self.time = time.time() - start_time
         # print "******  Round Result: ", restoredResults
-        return restoredResults
+        return result

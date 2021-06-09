@@ -15,11 +15,8 @@ from conflict_resolver import ConflictResolver
 
 def getFeatures(p: Problem, putName,featuresFileName):
     # normalize path for windows environment; this must be done even if running on wsl
-    print("python: " + p.sln)
     p.sln = p.sln.replace("/mnt/c/","c:\\\\")
-    print("python: " + p.sln)
     p.sln = p.sln.replace("/","\\\\")
-    print("python: " + p.sln)
     # end of code for path normalization
 
     p.ExtractObservers(putName, featuresFileName,"Proviso")
@@ -50,6 +47,7 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     
     rounds = 0
     resolver = ConflictResolver()
+    fvs=[]
     while True:
         
         inst.instrumentPre(problem, precondition, putName)
@@ -62,12 +60,13 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
         inst.insert_assumes(problem.classUnderTestFile, mut)
         posFv: List[FeatureVector] = teacher.RunTeacher(problem, putName, baseFeatures, "PRE", "POS" )
         
-        fvs = negFv + posFv
-
-        resolver.addSamples(fvs)
-
-
-        break
+        fvs =  negFv + posFv
+        
+        resolver.addSamplesAndResolveConflicts(fvs)
+        finalFvs: List[FeatureVector] = resolver.getSamples()
+        latestPre = learner.learn(finalFvs)
+        precondition = latestPre
+        
 
 def main():
     # classFile is needed for exceptions thrown in code under test and not PUT
