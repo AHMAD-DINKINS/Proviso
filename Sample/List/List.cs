@@ -10,6 +10,9 @@ namespace SampleList
         public List next;
         public int value;
 
+
+        public List() { }
+
         public List(int setValue)
         {
             value = setValue;
@@ -36,6 +39,19 @@ namespace SampleList
                 current.next = new List(newValue);
             }
             current = current.next;
+        }
+        public void addToEndCorrect(int newValue)
+        {
+
+            if (this.next == null)
+            {
+                this.next = new List(newValue);
+            }
+            else
+            {
+
+                this.addToEndCorrect(newValue);
+            }
         }
     }
 }

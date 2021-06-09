@@ -16,19 +16,19 @@ namespace SampleList.Test
     public partial class ListTest
     {
         [PexMethod]
-        public void CheckSample([PexAssumeNotNull]List l, int x)
+        public void PUT_CheckSample([PexAssumeNotNull]List l, int x)
         {
             
             int OldCount = l.Count();
             PexObserve.ValueForViewing("$input_x", x);
             PexObserve.ValueForViewing("$input_Count", OldCount);
 
-            PexAssume.IsTrue(true);
+            PexAssume.IsTrue(!(OldCount > 5));
             
 
             l.addToEnd(x);
 
-            //NotpAssume.IsTrue((oldCount + 1) == l.Count());
+            NotpAssume.IsTrue((OldCount + 1) == l.Count());
             PexAssert.IsTrue((OldCount + 1) == l.Count());
         } 
     }
