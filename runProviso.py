@@ -1,5 +1,5 @@
 
-from instrumenter import Instrumenter
+from instrumenterCSharp import InstrumenterCSharp
 import problem
 from problem import Problem
 from precis_feature import PrecisFeature
@@ -33,7 +33,7 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     baseFeatures: Tuple[PrecisFeature] = getFeatures(problem, putName ,featFileName)
     (intBaseFeatures, boolBaseFeatures) = Featurizer.getIntAndBoolFeatures(baseFeatures)
 
-    inst  = Instrumenter("MSBuild.exe", "Instrumenter/Instrumenter/bin/Debug/Instrumenter.exe")
+    inst  = InstrumenterCSharp("MSBuild.exe", "Instrumenter/Instrumenter/bin/Debug/Instrumenter.exe")
     teacher = Pex("pex.exe", ['/nor'])
     directoryToStoreLearnerFiles = "tempLocation"
     
@@ -41,13 +41,14 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
          intBaseFeatures, boolBaseFeatures)
 
     learner.generateInputLanguageFile("pre.names")
-    
-    precondition = "OldCount > 5"
+    #TODO remind to clean up tempLocation after done
+    precondition = "true"
 
     
     rounds = 0
     resolver = ConflictResolver()
     fvs=[]
+    allPreconditions = []
     while True:
         
         inst.instrumentPre(problem, precondition, putName)
@@ -64,9 +65,20 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
         
         resolver.addSamplesAndResolveConflicts(fvs)
         finalFvs: List[FeatureVector] = resolver.getSamples()
+        #TODO: check for consistency with precondition and finalFvs, and base features
         latestPre = learner.learn(finalFvs)
-        precondition = latestPre
+
+        if latestPre in allPreconditions:
+            inst.instrumentPre(problem, latestPre, putName)
+            inst.remove_assumes(problem.testFileNamePath,putName)
+            inst.remove_assumes(problem.classUnderTestFile, mut)
+            print("found ideal precondition")
+            return latestPre, rounds
         
+        allPreconditions.append(latestPre)
+        precondition = latestPre
+        rounds += 1
+
 
 def main():
     # classFile is needed for exceptions thrown in code under test and not PUT

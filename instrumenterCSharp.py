@@ -1,11 +1,12 @@
-import command_runner
-import os
 import io
+import os
 import re
 
+import command_runner
 from problem import Problem
 
-class Instrumenter:
+
+class InstrumenterCSharp:
 
     #  Name of compiler executable
     buildExe = ""
@@ -26,8 +27,8 @@ class Instrumenter:
         
         #print(buildOutput)
 
-    def instrumentPre(self, problem, pre, PUTName):
-        instCommand = self.getInstrumentationCommand(problem,pre, PUTName, "pre")
+    def instrumentPre(self, problem, precondition, PUTName):
+        instCommand = self.getInstrumentationCommand(problem,precondition, PUTName, "pre")
         instOutput = command_runner.runCommand(instCommand)
         #if "Success" in instOutput:
         #    print("instrumentation passed")
