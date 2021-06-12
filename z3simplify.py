@@ -32,7 +32,6 @@ def simplify(intVariables, boolVariables, precondition:str):
     
     #intVars = [ Int(var) for var in intVariables]
     #boolVars = [ Bool(var) for var in boolVariables]
-    
     #declareInts = "\n".join([ "(declare-const " + var + " Int)" for var in intVariables ])
     #declareBools = "\n".join([ "(declare-const " + var + " Bool)" for var in boolVariables ])
     #stringToParse = "\n".join([declareInts,  declareBools, "( assert " + precondition + ")"])
@@ -102,9 +101,11 @@ def simplify(intVariables, boolVariables, precondition:str):
                 completeDisjunct.append("(" + str(disjunct) + ")")
                 
         completeConjunct.append( "(" + " && ".join(completeDisjunct) + ")")
-    
-    simplifiedPrecondition = " || ".join(completeConjunct)
-    
+    if len(completeConjunct) >= 1:
+        simplifiedPrecondition = " || ".join(completeConjunct)
+    else:
+        raise Exception("z3 simplification went wrong!")
+        
     simplifiedPrecondition = simplifiedPrecondition.replace("Not", " ! ")
     simplifiedPrecondition = simplifiedPrecondition.replace("False", " false ")
     simplifiedPrecondition = simplifiedPrecondition.replace("True", " true ")
