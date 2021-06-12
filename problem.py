@@ -28,9 +28,9 @@ class Problem:
         observerExtractor = os.path.abspath('ObserverExtractor/ObserverExtractor/bin/Debug/ObserverExtractor.exe')
         
         cmd = observerExtractor + ' ' + self.sln + ' ' + self.projectName + ' ' + self.testFileName + ' ' + PUTName + ' ' + outputFile + ' ' +mode
-        print(cmd)
+        #print(cmd)
         output = command_runner.runCommand(cmd)
-        
+
     # Read the output file and parse the observer methods
     def ReadObserversFromFile(self, outputFile):
         assert (os.path.exists(outputFile)), "file with observers should exists"
