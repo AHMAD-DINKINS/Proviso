@@ -13,7 +13,7 @@ import shell
 from feature_vector import FeatureVector
 from conflict_resolver import ConflictResolver
 
-def getFeatures(p: Problem, putName,featuresFileName):
+def getFeaturesCSharp(p: Problem, putName,featuresFileName):
     # normalize path for windows environment; this must be done even if running on wsl
     p.sln = p.sln.replace("/mnt/c/","c:\\\\")
     p.sln = p.sln.replace("/","\\\\")
@@ -24,13 +24,21 @@ def getFeatures(p: Problem, putName,featuresFileName):
     
     return baseFeatures
 
+def getFeaturesJava(p: Problem, putName,featuresFileName):
+    pass
+    
+    #baseFeatures: Tuple[PrecisFeature] = p.ReadObserversFromFile(featuresFileName)
+    #return baseFeatures
+
+
 
 def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     featFileName ="typesOM.txt"
     currentStringTree = "true"
     allBaseFeatureVectors =[]
 
-    baseFeatures: Tuple[PrecisFeature] = getFeatures(problem, putName ,featFileName)
+    baseFeatures: Tuple[PrecisFeature] = getFeaturesCSharp(problem, putName ,featFileName)
+    exit(0)
     (intBaseFeatures, boolBaseFeatures) = Featurizer.getIntAndBoolFeatures(baseFeatures)
 
     inst  = InstrumenterCSharp("MSBuild.exe", "Instrumenter/Instrumenter/bin/Debug/Instrumenter.exe")
@@ -96,10 +104,30 @@ def main():
     muts=['addToEnd']
     sampleProb = Problem(solutionFile, testProjectName, testDebugFolder, testDll, testFileName,testNamespace, testClass, testFileNamePath, puts,classUnderTestPath, muts)
     print(solutionFile)
-    
-    for i in range(0,len(puts)):
-        learnPreconditionForExceptions(sampleProb, puts[i], muts[i])
 
+    # for i in range(0,len(puts)):
+    #     learnPreconditionForExceptions(sampleProb, puts[i], muts[i])
+
+
+    #TODO: Rethink what is required of the Problem class.
+    javaClassUnderTestPath = os.path.abspath('../onboard/src/main/java/List.java')
+    # end classFile
+    javaSolutionFile = ''
+    javaTestProjectName = 'ListTest'
+    javaTestDebugFolder = ''
+    javaTestDll = testDebugFolder + 'ListTest.dll'
+    javaTestFileNamePath = os.path.abspath('../onboard/src/main/java/AppendPairProgram.java')
+    javaTestFileName = os.path.basename(testFileNamePath)
+    javaTestNamespace = ''
+    javaTestClass = 'AppendPairProgram'
+    javaPuts =['TestStudentSubmission']
+    javaMuts=['addToEnd']
+
+    javaSampleProb = Problem(javaSolutionFile, javaTestProjectName, javaTestDebugFolder, javaTestDll, javaTestFileName,javaTestNamespace, javaTestClass, javaTestFileNamePath, javaPuts,javaClassUnderTestPath, javaMuts)    
+    for i in range(0,len(javaPuts)):
+        learnPreconditionForExceptions(javaSampleProb, puts[i], muts[i])
+
+    
 
 
 if __name__ == '__main__':
