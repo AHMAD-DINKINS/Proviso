@@ -1,5 +1,6 @@
 
 from instrumenterCSharp import InstrumenterCSharp
+from instrumenterJava import InstrumenterJava
 import problem
 from problem import Problem
 from precis_feature import PrecisFeature
@@ -41,7 +42,7 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     exit(0)
     (intBaseFeatures, boolBaseFeatures) = Featurizer.getIntAndBoolFeatures(baseFeatures)
 
-    inst  = InstrumenterCSharp("MSBuild.exe", "Instrumenter/Instrumenter/bin/Debug/Instrumenter.exe")
+    inst  = InstrumenterJava("cd ../;mvn compile; cd -", "")
     teacher = Pex("pex.exe", ['/nor'])
     directoryToStoreLearnerFiles = "tempLocation"
     
