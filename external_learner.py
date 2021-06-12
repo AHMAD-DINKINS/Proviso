@@ -52,6 +52,11 @@ class  ExternalLearner:
         start_time = time.time()
         result = self.runLearner()
         
+        if "true" == result.strip():
+            return "true" # in csharp/java, constant "true" is lower case
+        if "false" == result.strip():
+            return "false" # in csharp/java, constant "false" is lower case
+        
         if result.find("No Solution") == -1:
             if simplify:
                 result = z3simplify.simplify(self.intVariables, self.boolVariables, result)
