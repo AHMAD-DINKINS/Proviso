@@ -10,7 +10,7 @@ from os import sys, path
 from typing import List, Tuple, Type
 from pex import Pex
 from dtlearner import DTLearner
-# import shell
+import shell
 from feature_vector import FeatureVector
 from conflict_resolver import ConflictResolver
 import re
@@ -149,9 +149,6 @@ def main():
     javaMuts=['addToEnd']
 
     javaSampleProb = Problem(javaSolutionFile, javaTestProjectName, javaTestDebugFolder, javaTestDll, javaTestFileName,javaTestNamespace, javaTestClass, javaTestFileNamePath, javaPuts,javaClassUnderTestPath, javaMuts)
-
-    getFeaturesJava(javaSampleProb, javaPuts[0], javaMuts[0])
-    exit(0)
     for i in range(0,len(javaPuts)):
         learnPreconditionForExceptions(javaSampleProb, javaPuts[i], javaMuts[i])
 
