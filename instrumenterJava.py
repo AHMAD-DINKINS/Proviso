@@ -55,3 +55,6 @@ class InstrumenterJava:
         " --test-project-name=" +problem.projectName+ " --test-file-name=" +problem.testFileName+ " --PUT-name=" +PUTName+" --mode=" +mode+  " --condition="+"\""+condition+"\""
         return instruCommand
     
+    def getMsbuildCommand(self,problem):
+        buildCommand = self.buildExe+" " + problem.sln+ " /t:rebuild"
+        return buildCommand
