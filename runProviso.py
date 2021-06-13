@@ -68,7 +68,7 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     baseFeatures: Tuple[PrecisFeature] = getFeaturesJava(problem, putName ,featFileName)
     (intBaseFeatures, boolBaseFeatures) = Featurizer.getIntAndBoolFeatures(baseFeatures)
 
-    inst  = InstrumenterJava("cd ../;mvn compile; cd -", "")
+    inst  = InstrumenterJava("cd ../onboard; mvn compile; cd -", "")
     teacher = Pex("pex.exe", ['/nor'])
     directoryToStoreLearnerFiles = "tempLocation"
     
