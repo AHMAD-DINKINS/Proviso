@@ -63,11 +63,10 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     currentStringTree = "true"
     allBaseFeatureVectors =[]
 
-    baseFeatures: Tuple[PrecisFeature] = getFeaturesCSharp(problem, putName ,featFileName)
-    exit(0)
+    baseFeatures: Tuple[PrecisFeature] = getFeaturesJava(problem, putName ,featFileName)
     (intBaseFeatures, boolBaseFeatures) = Featurizer.getIntAndBoolFeatures(baseFeatures)
 
-    inst  = InstrumenterJava("cd ../;mvn compile; cd -", "")
+    inst  = InstrumenterJava("cd ../onboard; mvn compile; cd -", "")
     teacher = Pex("pex.exe", ['/nor'])
     directoryToStoreLearnerFiles = "tempLocation"
     
@@ -154,7 +153,7 @@ def main():
     getFeaturesJava(javaSampleProb, javaPuts[0], javaMuts[0])
     exit(0)
     for i in range(0,len(javaPuts)):
-        learnPreconditionForExceptions(javaSampleProb, puts[i], muts[i])
+        learnPreconditionForExceptions(javaSampleProb, javaPuts[i], javaMuts[i])
 
     
 
