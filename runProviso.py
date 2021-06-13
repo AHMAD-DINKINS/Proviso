@@ -13,6 +13,7 @@ from dtlearner import DTLearner
 import shell
 from feature_vector import FeatureVector
 from conflict_resolver import ConflictResolver
+import re
 
 def getFeaturesCSharp(p: Problem, putName,featuresFileName):
     # normalize path for windows environment; this must be done even if running on wsl
@@ -26,11 +27,37 @@ def getFeaturesCSharp(p: Problem, putName,featuresFileName):
     return baseFeatures
 
 def getFeaturesJava(p: Problem, putName,featuresFileName):
-    pass
-    
-    #baseFeatures: Tuple[PrecisFeature] = p.ReadObserversFromFile(featuresFileName)
-    #return baseFeatures
+    # read test file
+    with open(p.testFileNamePath) as f:
+        lines = f.readlines()
 
+    declared_observers = {}
+    observers_to_write = []
+    putNameSeen = False
+    for line in lines:
+        if putName in line:
+            putNameSeen = True
+        if putNameSeen:
+            # only add observers used in put
+            if "Old" in line:
+                observer = re.search(r"(Old[a-zA-Z]+)", line).groups()[0]
+                if observer in declared_observers:
+                    observers_to_write.append(observer)
+        else:
+            # get all observers and their type info
+            if "Old" in line:
+                type_info, observer = re.search(r"public ([a-zA-Z]+) (Old[a-zA-Z]+)", line).groups()
+                declared_observers[observer] = type_info
+    # write the observers
+    with open(featuresFileName, 'w') as f:
+        for ob in observers_to_write:
+            # truncate ending for "boolean" for observer reader 
+            typ = declared_observers[ob].replace("ean", "")
+            f.write(ob + " " + typ + "\n")
+
+
+    baseFeatures: Tuple[PrecisFeature] = p.ReadObserversFromFile(featuresFileName)
+    return baseFeatures
 
 
 def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
@@ -38,8 +65,7 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     currentStringTree = "true"
     allBaseFeatureVectors =[]
 
-    baseFeatures: Tuple[PrecisFeature] = getFeaturesCSharp(problem, putName ,featFileName)
-    exit(0)
+    baseFeatures: Tuple[PrecisFeature] = getFeaturesJava(problem, putName ,featFileName)
     (intBaseFeatures, boolBaseFeatures) = Featurizer.getIntAndBoolFeatures(baseFeatures)
 
     inst  = InstrumenterJava("cd ../;mvn compile; cd -", "")
@@ -126,7 +152,7 @@ def main():
 
     javaSampleProb = Problem(javaSolutionFile, javaTestProjectName, javaTestDebugFolder, javaTestDll, javaTestFileName,javaTestNamespace, javaTestClass, javaTestFileNamePath, javaPuts,javaClassUnderTestPath, javaMuts)    
     for i in range(0,len(javaPuts)):
-        learnPreconditionForExceptions(javaSampleProb, puts[i], muts[i])
+        learnPreconditionForExceptions(javaSampleProb, javaPuts[i], javaMuts[i])
 
     
 

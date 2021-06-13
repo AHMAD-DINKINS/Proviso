@@ -31,10 +31,30 @@ class InstrumenterJava:
         #instCommand = self.getInstrumentationCommand(problem,precondition, PUTname, mode)
         #instOutput = command_runner.runCommand(instCommand)
         # TODO: write python code to search for second assumeTrue() in TestStudentSubmission and replace with precondition
-        pass
+        #This script assumes that the target assumeTrue will be placed after the observers are initialized within the PUT
+        with open(problem.testFileNamePath) as f:
+            lines = f.readlines()
+        PUTnameSeen = False
+        observersSeen = False
+        for line_idx in range(len(lines)):
+            if PUTname in lines[line_idx]:
+                PUTnameSeen = True
+            if PUTnameSeen:
+                if "Old" in lines[line_idx]:
+                    observersSeen = True
+                elif observersSeen and "assumeTrue" in lines[line_idx]:
+                    oldPreCon = re.search(r'assumeTrue\(([\s\S]*)\);', lines[line_idx]).groups()[0]
+                    lines[line_idx] = lines[line_idx].replace(oldPreCon, precondition)
+                    break
+        
+        with open(problem.testFileNamePath, 'w') as f:
+            f.write("".join(lines))
 
     def getInstrumentationCommand(self, problem: Problem, condition: str,PUTName: str, mode:str):
         instruCommand = self.inserterExe + " --solution=" + problem.sln + \
         " --test-project-name=" +problem.projectName+ " --test-file-name=" +problem.testFileName+ " --PUT-name=" +PUTName+" --mode=" +mode+  " --condition="+"\""+condition+"\""
         return instruCommand
     
+    def getMsbuildCommand(self,problem):
+        buildCommand = self.buildExe+" " + problem.sln+ " /t:rebuild"
+        return buildCommand
