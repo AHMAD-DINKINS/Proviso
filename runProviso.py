@@ -10,7 +10,7 @@ from os import sys, path
 from typing import List, Tuple, Type
 from pex import Pex
 from dtlearner import DTLearner
-import shell
+# import shell
 from feature_vector import FeatureVector
 from conflict_resolver import ConflictResolver
 import re
@@ -33,21 +33,19 @@ def getFeaturesJava(p: Problem, putName,featuresFileName):
 
     declared_observers = {}
     observers_to_write = []
-    putNameSeen = False
+    tagSeen = False
     for line in lines:
-        if putName in line:
-            putNameSeen = True
-        if putNameSeen:
+        if "Features" in line:
+            tagSeen = True
+        if tagSeen:
             # only add observers used in put
             if "Old" in line:
                 observer = re.search(r"(Old[a-zA-Z]+)", line).groups()[0]
                 if observer in declared_observers:
                     observers_to_write.append(observer)
-        else:
-            # get all observers and their type info
-            if "Old" in line:
-                type_info, observer = re.search(r"public ([a-zA-Z]+) (Old[a-zA-Z]+)", line).groups()
-                declared_observers[observer] = type_info
+                else:
+                    type_info, observer = re.search(r"public ([a-zA-Z]+) (Old[a-zA-Z]+)", line).groups()
+                    declared_observers[observer] = type_info
     # write the observers
     with open(featuresFileName, 'w') as f:
         for ob in observers_to_write:
@@ -144,14 +142,17 @@ def main():
     javaTestProjectName = 'ListTest'
     javaTestDebugFolder = ''
     javaTestDll = testDebugFolder + 'ListTest.dll'
-    javaTestFileNamePath = os.path.abspath('../onboard/src/main/java/AppendPairProgram.java')
+    javaTestFileNamePath = os.path.abspath('../onboardtask/src/main/java/AppendPairProgram.java')
     javaTestFileName = os.path.basename(testFileNamePath)
     javaTestNamespace = ''
     javaTestClass = 'AppendPairProgram'
     javaPuts =['TestStudentSubmission']
     javaMuts=['addToEnd']
 
-    javaSampleProb = Problem(javaSolutionFile, javaTestProjectName, javaTestDebugFolder, javaTestDll, javaTestFileName,javaTestNamespace, javaTestClass, javaTestFileNamePath, javaPuts,javaClassUnderTestPath, javaMuts)    
+    javaSampleProb = Problem(javaSolutionFile, javaTestProjectName, javaTestDebugFolder, javaTestDll, javaTestFileName,javaTestNamespace, javaTestClass, javaTestFileNamePath, javaPuts,javaClassUnderTestPath, javaMuts)
+
+    getFeaturesJava(javaSampleProb, javaPuts[0], javaMuts[0])
+    exit(0)
     for i in range(0,len(javaPuts)):
         learnPreconditionForExceptions(javaSampleProb, puts[i], muts[i])
 
