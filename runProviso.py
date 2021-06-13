@@ -65,8 +65,7 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     currentStringTree = "true"
     allBaseFeatureVectors =[]
 
-    baseFeatures: Tuple[PrecisFeature] = getFeaturesCSharp(problem, putName ,featFileName)
-    exit(0)
+    baseFeatures: Tuple[PrecisFeature] = getFeaturesJava(problem, putName ,featFileName)
     (intBaseFeatures, boolBaseFeatures) = Featurizer.getIntAndBoolFeatures(baseFeatures)
 
     inst  = InstrumenterJava("cd ../;mvn compile; cd -", "")
@@ -153,7 +152,7 @@ def main():
 
     javaSampleProb = Problem(javaSolutionFile, javaTestProjectName, javaTestDebugFolder, javaTestDll, javaTestFileName,javaTestNamespace, javaTestClass, javaTestFileNamePath, javaPuts,javaClassUnderTestPath, javaMuts)    
     for i in range(0,len(javaPuts)):
-        learnPreconditionForExceptions(javaSampleProb, puts[i], muts[i])
+        learnPreconditionForExceptions(javaSampleProb, javaPuts[i], javaMuts[i])
 
     
 
