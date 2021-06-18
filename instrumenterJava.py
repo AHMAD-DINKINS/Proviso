@@ -21,6 +21,8 @@ class InstrumenterJava:
     def instrumentPre(self, problem, precondition, PUTname):
         
         self.instrument(problem, precondition, PUTname,"pre")
+        #TODO consider adding wrapper method called build that calls the three methods below,
+        # This way, it will be easier to have a parent class.
         buildCommand = self.getMvnCommand(problem)
         
         buildOutput = command_runner.runCommand(buildCommand)
