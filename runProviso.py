@@ -86,7 +86,7 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
         
         inst.instrumentPre(problem, precondition, putName)
         inst.remove_assumes(problem.testFileNamePath,putName)
-        inst.remove_assumes(problem.classUnderTestFile, mut)
+        inst.remove_assumes(problem.classUnderTestFile, mut)# will need to implement assume for exception failures in larger programs
         negFv: List[FeatureVector] = teacher.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
         
         inst.instrumentPre(problem,"!("+ precondition+")", putName)
