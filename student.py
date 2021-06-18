@@ -1,14 +1,18 @@
 
 class Student:
 
-  def __init__(self, email, submssions):
+  def __init__(self, email):
     self.email = email
-    self.submissions = submssions
+    self.submissions = []
 
   def get_email(self):
     return self.email
 
-  def get_submissions_from_result(self, result):
-    return self.submissions[result] if result in self.submissions else None
+  def get_submissions(self):
+    return self.submissions
+
+  def add_submission(self, sub):
+    self.submissions.append(sub)
+    
 
   

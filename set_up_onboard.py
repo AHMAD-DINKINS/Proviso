@@ -9,9 +9,12 @@ def parse(submissions):
     # read submissions
     with open(submissions) as f:
         submission_list = json.load(f)
+    # sort the submissions by timestamp
+    submission_list = sorted(submission_list, key = lambda dic: int(dic['timestamp']))
     
     # A dictionary for hte different problems
     problems_dict = {}
+    students_dict = {}
 
     # fill problems
     for sub in submission_list:
@@ -25,56 +28,67 @@ def parse(submissions):
         student = sub['user']
         if not student in problems_dict[problem]:
             problems_dict[problem][student] = {}
+            students_dict[student] = Student(student)
 
     # fill submissions
     for sub in submission_list:
         problem = sub['question']
         student = sub['user']
         result = sub['result']
+        students_dict[student].add_submission(sub)
         if result in problems_dict[problem][student]:
             problems_dict[problem][student][result].append(sub)
         else:
             problems_dict[problem][student][result] = [sub]
 
     # return the problem directory
-    return problems_dict
+    return problems_dict, students_dict
 
 
 def main(class_loc, correct, method, utils, submissions):
 
   groups = None
-  problems = parse(submissions)
+  problems, students = parse(submissions)
   #TODO set up needs to init the pair program as well for different problems
-  for problem in problems:
-    # for testing list
-    if problem != 'Sp18_Q11_10':
-      continue
+  # for problem in problems:
+  #   # for testing list
+  #   if problem != 'Sp18_Q11_10':
+  #     continue
     # might want to sort by time stamp
-    for student in problems[problem]:
-      submissions = problems[problem][student]
-      curr_stu = Student(student, submissions)
-      for result in submissions:
-        #TODO specific to 125 find different way to skip files that don't compile
-        if result != "CompileError":
-          submissions_under_result = submissions[result]
-          submissions_to_run = []
-          length_of_subs = len(submissions_under_result)
-          # not running every submission
-          if length_of_subs >= 1:
-            submissions_to_run.append(submissions_under_result[0])
-          if length_of_subs >= 2:
-            submissions_to_run.append(submissions_under_result[-1])
-          if length_of_subs >=3:
-            submissions_to_run.append(submissions_under_result[length_of_subs // 2])
-        for sub in submissions_to_run:
-          #TODO json might not be the same for different universities, change this or require same json structure
-          code = sub['code']
-          set_up(code, class_loc, correct, method, utils)
-          #TODO for testing, replace with call to learner
-          pre = "false"
-          groups = group_by_pre(sub, curr_stu, pre, groups)
+  for student in students:
+    # submissions = problems[problem][student]
+    curr_stu = students[student]
+    submissions = curr_stu.get_submissions()
+    if len(submissions) >= 4:
+      submissions = submissions[-4:]
+    # for sub in submissions:
+      
+      #TODO specific to 125 find different way to skip files that don't compile
+      
+        # submissions_under_result = submissions[result]
+        # submissions_to_run = []
+        # length_of_subs = len(submissions_under_result)
+        # # not running every submission
+        # if length_of_subs >= 1:
+        #   submissions_to_run.append(submissions_under_result[0])
+        # if length_of_subs >= 2:
+        #   submissions_to_run.append(submissions_under_result[-1])
+        # if length_of_subs >=3:
+        #   submissions_to_run.append(submissions_under_result[length_of_subs // 2])
+    for sub in submissions:
+      #TODO json might not be the same for different universities, change this or require same json structure
+      result = sub['result']
+      code = sub['code']
+      problem = sub['question']
+      if problem != 'Sp18_Q11_10':
+        continue
+      elif result != "CompileError" and result != "RuntimeError":
+        set_up(code, class_loc, correct, method, utils)
+        #TODO for testing, replace with call to learner
+        pre = "false"
+        groups = group_by_pre(sub, curr_stu, pre, groups)
 
-  create_dir(groups[1])
+        create_dir(groups[1])
 
         
 def set_up(code, class_loc, correct, method, utils):
@@ -95,7 +109,7 @@ def set_up(code, class_loc, correct, method, utils):
 
   new_code = new_code.replace(method_name, method_name[:-1] + "Stu(")
 
-  pattern = r'public class ([a-zA-Z]+)'
+  pattern = r'class ([a-zA-Z]+)'
   # example so we don't overwrite current files
   name_of_class = re.search(pattern, new_code).groups()[0] + "Example.java"
   name_of_class = os.path.join(class_loc, name_of_class)
