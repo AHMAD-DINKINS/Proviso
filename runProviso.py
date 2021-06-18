@@ -13,7 +13,9 @@ from dtlearner import DTLearner
 import shell
 from feature_vector import FeatureVector
 from conflict_resolver import ConflictResolver
+from evosuite import Evosuite
 import re
+
 
 def getFeaturesCSharp(p: Problem, putName,featuresFileName):
     # normalize path for windows environment; this must be done even if running on wsl
@@ -67,7 +69,7 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     (intBaseFeatures, boolBaseFeatures) = Featurizer.getIntAndBoolFeatures(baseFeatures)
 
     inst  = InstrumenterJava("mvn compile", "")
-    teacher = Pex("pex.exe", ['/nor'])
+    teacher = Evosuite("scripts/run_evosuite.sh", [])
     directoryToStoreLearnerFiles = "tempLocation"
     
     learner = DTLearner("dtlearner", "learners/C50exact/c5.0dbg", ['-I 1', '-m 1', '-f' ],directoryToStoreLearnerFiles, \
@@ -86,7 +88,7 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
         
         inst.instrumentPre(problem, precondition, putName)
         inst.remove_assumes(problem.testFileNamePath,putName)
-        inst.remove_assumes(problem.classUnderTestFile, mut)# will need to implement assume for exception failures in larger programs
+        inst.remove_assumes(problem.classUnderTestFile, mut)#TODO: will need to implement assume for exception failures in larger programs
         negFv: List[FeatureVector] = teacher.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
         
         inst.instrumentPre(problem,"!("+ precondition+")", putName)
