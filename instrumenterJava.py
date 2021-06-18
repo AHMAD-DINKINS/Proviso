@@ -1,4 +1,5 @@
 import io
+import re
 from problem import Problem
 import re
 import command_runner
@@ -23,7 +24,9 @@ class InstrumenterJava:
         buildCommand = self.getMvnCommand(problem)
         
         buildOutput = command_runner.runCommand(buildCommand)
-        print(buildOutput)
+        returnDirOutput = command_runner.runCommand("cd -")
+
+        #print(buildOutput)
 
     def instrument(self, problem, precondition, PUTname, mode):
         # TODO: make these changes in CSharp instrumenter class
@@ -39,7 +42,7 @@ class InstrumenterJava:
             if PUTname in lines[line_idx]:
                 PUTnameSeen = True
             if PUTnameSeen:
-                if "Old" in lines[line_idx]:
+                if "Old" in lines[line_idx] and not "assumeTrue" in lines[line_idx]:
                     observersSeen = True
                 elif observersSeen and "assumeTrue" in lines[line_idx]:
                     oldPreCon = re.search(r'assumeTrue\(([\s\S]*)\);', lines[line_idx]).groups()[0]
@@ -60,7 +63,7 @@ class InstrumenterJava:
 
     def getMvnCommand(self, problem):
         #TODO: onboard should be parameter. Problem should include a root dir field
-        buildCommand = "cd ../onboard; "+ self.buildExe + "; cd -"
+        buildCommand = "cd ../onboard; "+ self.buildExe 
         return buildCommand
 
     def remove_assumes(self, ClassFilePath, methodUnderTest):
