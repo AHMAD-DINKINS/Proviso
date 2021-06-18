@@ -29,7 +29,7 @@ class InstrumenterJava:
         returnDirOutput = command_runner.runCommand("cd -")
 
         #print(buildOutput)
-
+        #print(returnDirOutput)
     def instrument(self, problem, precondition, PUTname, mode):
         # TODO: make these changes in CSharp instrumenter class
         #instCommand = self.getInstrumentationCommand(problem,precondition, PUTname, mode)
