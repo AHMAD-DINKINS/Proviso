@@ -13,10 +13,7 @@ import io
 ##from utilityPython import utils
 ##from benchmarkSet import BenchmarkSet
 from lxml import etree
-#import modifycode
-#import reportparser
-#import pex
-#import csharp
+from feature_vector import FeatureVector
 
 # Teacher is still under design
 class Teacher:
@@ -36,7 +33,7 @@ class Teacher:
         self.binary = binary
         self.arguments = arguments
 
-    def runTeacher(self):
+    def runTeacher(self, problem, PUTName, precisFeatureList, preOrPost, kindOfData):
         pass
     
     def parseReportPost(self, pexReportFolder):
