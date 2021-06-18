@@ -32,7 +32,8 @@ class Teacher:
     def __init__(self, binary, arguments):
         self.binary = binary
         self.arguments = arguments
-
+        self.time = 0.0
+        
     def runTeacher(self, problem, PUTName, precisFeatureList, preOrPost, kindOfData):
         pass
     
