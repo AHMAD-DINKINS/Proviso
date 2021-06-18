@@ -24,7 +24,7 @@ class InstrumenterJava:
         #TODO consider adding wrapper method called build that calls the three methods below,
         # This way, it will be easier to have a parent class.
         buildCommand = self.getMvnCommand(problem)
-        
+        #TODO check build was successful
         buildOutput = command_runner.runCommand(buildCommand)
         returnDirOutput = command_runner.runCommand("cd -")
 
