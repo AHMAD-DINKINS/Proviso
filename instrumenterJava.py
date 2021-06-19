@@ -71,3 +71,6 @@ class InstrumenterJava:
 
     def remove_assumes(self, ClassFilePath, methodUnderTest):
         pass
+
+    def insert_assumes(self,ClassFilePath, methodUnderTest):
+        pass
