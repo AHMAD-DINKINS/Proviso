@@ -36,7 +36,7 @@ class Evosuite(Teacher):
         trace_file_names = [file_name for file_name in trace_file_names if example_label in file_name]
         for file_name in trace_file_names:
             file_name = dir_of_trace + file_name
-            test_label = "True" if "PASS" in file_name else "False"
+
             with open(file_name) as f:
                 lines = f.readlines()
 
@@ -47,8 +47,9 @@ class Evosuite(Teacher):
                     pos_of_exit.append(line_idx)
             if len(pos_of_exit) == 0:
                 print("COULD NOT FIND EXIT FOR VALUES") 
-                exit(0)
+                continue
             #truncate lines to make easier to iterate over
+            test_label=None
             for pos in pos_of_exit:
                 values = []
                 new_lines = lines[pos:]
@@ -56,9 +57,13 @@ class Evosuite(Teacher):
                     if "Old" in new_lines[line_idx]:
                         value = new_lines[line_idx + 1].strip()
                         if value == 'true' or value == 'false':
-                            value = value[0].upper() + value[1:]
+                            value = value.capitalize()
                         values.append(value)
-                    elif new_lines[line_idx] == "\n":
+                    elif "this.safe" in new_lines[line_idx]:
+                        testResult = new_lines[line_idx + 1].strip()
+                        testResult = testResult.capitalize()
+                        test_label = eval(testResult)
+                    elif new_lines[line_idx] == "\n": #TOOD: consider stopping after safe intead of newlinw
                         break
 
                 vector = FeatureVector(precisFeatureList, values, test_label, example_label)
@@ -79,6 +84,6 @@ class Evosuite(Teacher):
         
         featVectors: List[FeatureVector] = self.parseTrace(precisFeatureList, kindOfData) # TODO: Ahmad learn from this guy parseReportForPrecondition in pex.py
 
-        changeDirOut = command_runner.runCommand("cd -")
-        print(changeDirOut)
+        #changeDirOut = command_runner.runCommand("cd -")
+        #print(changeDirOut)
         return featVectors
