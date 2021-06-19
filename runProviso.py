@@ -143,10 +143,10 @@ def main():
     javaTestProjectName = 'ListTest'
     javaTestDebugFolder = ''
     javaTestDll = testDebugFolder + 'ListTest.dll'
-    javaTestFileNamePath = os.path.abspath('../onboard/src/main/java/AppendPairProgram.java')
+    javaTestFileNamePath = os.path.abspath('../onboard/src/main/java/PairProgram.java')
     javaTestFileName = os.path.basename(testFileNamePath)
     javaTestNamespace = ''
-    javaTestClass = 'AppendPairProgram'
+    javaTestClass = 'PairProgram'
     javaPuts =['TestStudentSubmission']
     javaMuts=['addToEnd']
 

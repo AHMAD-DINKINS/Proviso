@@ -111,7 +111,7 @@ def set_up(code, class_loc, correct, method, utils):
 
   pattern = r'class ([a-zA-Z]+)'
   # example so we don't overwrite current files
-  name_of_class = re.search(pattern, new_code).groups()[0] + "Example.java"
+  name_of_class = re.search(pattern, new_code).groups()[0] + ".java"
   name_of_class = os.path.join(class_loc, name_of_class)
   name_of_class = os.path.abspath(name_of_class)
   
