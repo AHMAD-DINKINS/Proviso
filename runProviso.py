@@ -130,7 +130,7 @@ def main():
     puts =['PUT_CheckSample']
     muts=['addToEnd']
     sampleProb = Problem(solutionFile, testProjectName, testDebugFolder, testDll, testFileName,testNamespace, testClass, testFileNamePath, puts,classUnderTestPath, muts)
-    print(solutionFile)
+    #print(solutionFile)
 
     # for i in range(0,len(puts)):
     #     learnPreconditionForExceptions(sampleProb, puts[i], muts[i])
