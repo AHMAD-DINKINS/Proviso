@@ -14,19 +14,16 @@ class FeatureVector:
     #TODO: need a way to construct a FeatureVector where the values are already Z3 boolref values
     ctx = Context()
 
-    def __init__(self, precisFeatureList: List[PrecisFeature], values: List[str], testLabel, exampleLabel:str):
+    def __init__(self, precisFeatureList: List[PrecisFeature], values: List[str], testLabel:bool, exampleLabel:str):
 
-        assert(testLabel == 'True' or testLabel == 'False')
+        assert(type(testLabel) == bool)
         assert( len(precisFeatureList) == len(values) )
         #self.values = values
         
         for idx in range(len(values)):
             self.AddValues(precisFeatureList[idx].varZ3, values[idx], idx)
         ################ All of this logic should go to the Featurizer class which should know whow to label samples for TG
-        if testLabel == 'True':
-            self.testLabel = True
-        else:
-            self.testLabel = False
+        self.testLabel = testLabel
 
         if exampleLabel.upper() == "NEG" and not self.testLabel:
             self.counterexampleLabel = False
@@ -56,6 +53,8 @@ class FeatureVector:
         elif is_bool(precisFeatureZ3):
             self.valuesZ3 += (BoolVal(value.upper() == 'TRUE'), )
             self.values += (value,)
+
+            
     @staticmethod
     def copyFeatureVector(fv : 'FeatureVector'): 
         if not isinstance(fv, FeatureVector):
