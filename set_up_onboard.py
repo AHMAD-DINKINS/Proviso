@@ -140,7 +140,7 @@ def group_by_pre(sub, curr_stu, pre, groups):
 
 
 def write_result_file(preconditions):
-  file_name = "results.txt"
+  file_name = "clusters.txt"
   path = os.path.abspath(file_name)
   with open(path, 'w') as f:
     for pre in preconditions:
