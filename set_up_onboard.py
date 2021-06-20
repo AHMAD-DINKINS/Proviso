@@ -1,11 +1,14 @@
 import argparse
 import json
 import os
+from problem import Problem
+from runProviso import learnPreconditionForExceptions
 import re
 from student import Student
 
 
 def parse(submissions):
+    # A lot of this will change since I no longer need problems_dict TODO refactor
     # read submissions
     with open(submissions) as f:
         submission_list = json.load(f)
@@ -45,7 +48,7 @@ def parse(submissions):
     return problems_dict, students_dict
 
 
-def main(class_loc, correct, method, utils, submissions):
+def main(class_loc, correct, method, utils, submissions, prob, put, mut):
 
   groups = None
   problems, students = parse(submissions)
@@ -82,10 +85,10 @@ def main(class_loc, correct, method, utils, submissions):
       problem = sub['question']
       if problem != 'Sp18_Q11_10':
         continue
-      elif result != "CompileError" and result != "RuntimeError":
+      elif result != "CompilerError" and result != "RuntimeError":
         set_up(code, class_loc, correct, method, utils)
         #TODO for testing, replace with call to learner
-        pre = "false"
+        pre = learnPreconditionForExceptions(prob, put, mut)[0]
         groups = group_by_pre(sub, curr_stu, pre, groups)
 
         create_dir(groups[1])
@@ -168,6 +171,21 @@ if __name__ == "__main__":
   parser.add_argument('--util', metavar="Utilities", type=str, help="The observer/utility methods to be instrumented into the problem")
   parser.add_argument('--submissions', metavar='Submissions', type=str, help='The json file containing student submissions')
 
+  javaClassUnderTestPath = os.path.abspath('../onboard/src/main/java/List.java')
+  # end classFile
+  testDebugFolder = 'Sample/ListTest/bin/Debug/'
+  testFileNamePath = os.path.abspath('Sample/ListTest/ListTest.cs')
+  javaSolutionFile = ''
+  javaTestProjectName = 'ListTest'
+  javaTestDebugFolder = ''
+  javaTestDll = testDebugFolder + 'ListTest.dll'
+  javaTestFileNamePath = os.path.abspath('../onboard/src/main/java/PairProgram.java')
+  javaTestFileName = os.path.basename(testFileNamePath)
+  javaTestNamespace = ''
+  javaTestClass = 'PairProgram'
+  javaPuts =['TestStudentSubmission']
+  javaMuts=['addToEnd']
+
   args = parser.parse_args()
 
   class_loc = args.class_loc
@@ -176,4 +194,6 @@ if __name__ == "__main__":
   utils = args.util
   submissions = args.submissions
 
-  main(class_loc, correct, method, utils, submissions)
+  javaSampleProb = Problem(javaSolutionFile, javaTestProjectName, javaTestDebugFolder, javaTestDll, javaTestFileName,javaTestNamespace, javaTestClass, javaTestFileNamePath, javaPuts,javaClassUnderTestPath, javaMuts)
+  for i in range(0,len(javaPuts)):
+      main(class_loc, correct, method, utils, submissions, javaSampleProb, javaPuts[i], javaMuts[i])
