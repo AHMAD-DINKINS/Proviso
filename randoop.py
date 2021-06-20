@@ -68,7 +68,7 @@ class Randoop(Teacher):
 
                 vector = FeatureVector(precisFeatureList, values, test_label, example_label)
                 dataPoints.append(vector)
-
+        self.findExceptions(dir_of_trace + "target/surefire-reports/")
         return dataPoints
 
     def RunTeacher(self, problem, PUTName, precisFeatureList, preOrPost, kindOfData) -> List[FeatureVector]:
