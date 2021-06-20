@@ -77,10 +77,10 @@ class Randoop(Teacher):
         # changeDirOut = command_runner.runCommand("cd ../onboard")
         
         print(args)
-        evoOut = command_runner.runCommand(args)
+        randOut = command_runner.runCommand(args)
         
         print("randoop output##############")
-        print(evoOut)
+        print(randOut)
         
         featVectors: List[FeatureVector] = self.parseTrace(precisFeatureList, kindOfData) # TODO: Ahmad learn from this guy parseReportForPrecondition in pex.py
 
