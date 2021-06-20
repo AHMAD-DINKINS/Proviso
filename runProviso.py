@@ -42,7 +42,7 @@ def getFeaturesJava(p: Problem, putName,featuresFileName):
             tagSeen = True
         if tagSeen:
             # only add observers used in put
-            if "Old" in line:
+            if "Old" in line and not "assumeTrue" in line:
                 observer = re.search(r"(Old[a-zA-Z]+)", line).groups()[0]
                 if observer in declared_observers:
                     observers_to_write.append(observer)
