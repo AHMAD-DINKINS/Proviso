@@ -1,7 +1,8 @@
 
+from z3.z3 import simplify
 from instrumenterCSharp import InstrumenterCSharp
 from instrumenterJava import InstrumenterJava
-import problem
+from randoop import Randoop
 from problem import Problem
 from precis_feature import PrecisFeature
 from featurizer import Featurizer
@@ -59,6 +60,24 @@ def getFeaturesJava(p: Problem, putName,featuresFileName):
     baseFeatures: Tuple[PrecisFeature] = p.ReadObserversFromFile(featuresFileName)
     return baseFeatures
 
+def isConsistent(precondition, baseFeatures:Tuple[PrecisFeature], fvs:List[FeatureVector]):
+    if precondition == "true" or precondition == "false":
+        precondition = precondition.capitalize()
+        result = eval(precondition, {},{})
+        consistent = all( fv.counterexampleLabel == result for fv in fvs)
+        return consistent
+
+    mappings = Featurizer.generateFeatureValueMappingPython(baseFeatures,fvs)
+
+    for mapIdx in range(len(mappings)):
+        result = eval(precondition, {}, mappings[mapIdx])
+        result = simplify(result)
+        if mappings[mapIdx]["label"] and not result:
+            return False
+        elif not mappings[mapIdx]["label"] and result:
+            return False
+    return True
+
 
 def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     featFileName ="typesOM.txt"
@@ -70,6 +89,7 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
 
     inst  = InstrumenterJava("mvn compile", "")
     teacher = Evosuite("scripts/run_evosuite.sh", [])
+    #teacher = Randoop("scripts/run_randoop.sh", [])
     directoryToStoreLearnerFiles = "tempLocation"
     
     learner = DTLearner("dtlearner", "learners/C50exact/c5.0dbg", ['-I 1', '-m 1', '-f' ],directoryToStoreLearnerFiles, \
@@ -78,8 +98,6 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     learner.generateInputLanguageFile("pre.names")
     #TODO remind to clean up tempLocation after done
     precondition = "true"
-
-    
     rounds = 0
     resolver = ConflictResolver()
     fvs=[]
@@ -96,19 +114,22 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
         inst.insert_assumes(problem.classUnderTestFile, mut)
         posFv: List[FeatureVector] = teacher.RunTeacher(problem, putName, baseFeatures, "PRE", "POS" )
         
-        fvs =  negFv + posFv
+        fvs: List[FeatureVector] =  negFv + posFv
         
         resolver.addSamplesAndResolveConflicts(fvs)
         finalFvs: List[FeatureVector] = resolver.getSamples()
         #TODO: check for consistency with precondition and finalFvs, and base features
-        latestPre = learner.learn(finalFvs)
-
-        if latestPre in allPreconditions:
+        consistent = isConsistent(precondition,baseFeatures,finalFvs)
+        
+        if consistent:
             inst.instrumentPre(problem, latestPre, putName)
             inst.remove_assumes(problem.testFileNamePath,putName)
             inst.remove_assumes(problem.classUnderTestFile, mut)
             print("found ideal precondition")
             return latestPre, rounds
+
+        latestPre = learner.learn(finalFvs)
+            
         
         allPreconditions.append(latestPre)
         precondition = latestPre

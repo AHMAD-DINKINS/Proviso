@@ -162,7 +162,17 @@ class Featurizer:
             mergedFvs.append(merged)
         return mergedFvs 
             
-    
+    @staticmethod
+    def generateFeatureValueMappingPython(baseFeatures: List[PrecisFeature], featureVectors:List[FeatureVector]):
+        mappings = []
+        for fvIdx in range(0, len(featureVectors)):
+            entry = {}
+            for i in  range(len(baseFeatures)):
+                #print("type of featVec", type(featureVector[i]))
+                entry[baseFeatures[i].varName] = featureVectors[fvIdx][i]
+            entry["label"] = featureVectors[fvIdx].counterexampleLabel
+            mappings.append(entry)    
+        return mappings
 
     @staticmethod
     def generateFeatureValueMapping(baseFeatures, featureVector):
