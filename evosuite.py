@@ -80,7 +80,7 @@ class Evosuite(Teacher):
         evoOut = command_runner.runCommand(args)
         
         print("evosuite output##############")
-        print(evoOut)
+        #print(evoOut)
         
         featVectors: List[FeatureVector] = self.parseTrace(precisFeatureList, kindOfData) # TODO: Ahmad learn from this guy parseReportForPrecondition in pex.py
 
