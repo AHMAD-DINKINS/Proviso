@@ -79,8 +79,8 @@ class Randoop(Teacher):
         print(args)
         randOut = command_runner.runCommand(args)
         
-        print("randoop output##############")
-        print(randOut)
+        #print("randoop output##############")
+        #print(randOut)
         
         featVectors: List[FeatureVector] = self.parseTrace(precisFeatureList, kindOfData) # TODO: Ahmad learn from this guy parseReportForPrecondition in pex.py
 
