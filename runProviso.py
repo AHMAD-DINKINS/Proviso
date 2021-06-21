@@ -108,31 +108,32 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
         inst.instrumentPre(problem, precondition, putName)
         inst.remove_assumes(problem.testFileNamePath,putName)
         inst.remove_assumes(problem.classUnderTestFile, mut)#TODO: will need to implement assume for exception failures in larger programs
-        #negFv: List[FeatureVector] = teacherEvo.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
-        #negFvRand: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
-        negFv: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
-        #negFv.extend(negFvRand)
+        negFv: List[FeatureVector] = teacherEvo.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
+        negFvRand: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
+        #negFv: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
+        negFv.extend(negFvRand)
 
         inst.instrumentPre(problem,"!("+ precondition+")", putName)
         inst.insert_assumes(problem.testFileNamePath,putName)
         inst.insert_assumes(problem.classUnderTestFile, mut)
-        #posFv: List[FeatureVector] = teacherEvo.RunTeacher(problem, putName, baseFeatures, "PRE", "POS" )
-        #posFvR: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "POS" )
-        posFv: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "POS" )
-        #posFv.extend(posFvR)
+        posFv: List[FeatureVector] = teacherEvo.RunTeacher(problem, putName, baseFeatures, "PRE", "POS" )
+        posFvR: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "POS" )
+        #posFv: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "POS" )
+        posFv.extend(posFvR)
 
         fvs: List[FeatureVector] =  negFv + posFv
         
         resolver.addSamplesAndResolveConflicts(fvs)
         finalFvs: List[FeatureVector] = resolver.getSamples()
-        
+
         consistent = isConsistent(precondition,baseFeatures,finalFvs)
         
         if consistent:
-            inst.instrumentPre(problem, latestPre, putName)
+            inst.instrumentPre(problem, precondition, putName)
             inst.remove_assumes(problem.testFileNamePath,putName)
             inst.remove_assumes(problem.classUnderTestFile, mut)
             print("found ideal precondition")
+            print(precondition) 
             return latestPre, rounds
 
         latestPre = learner.learn(finalFvs)
