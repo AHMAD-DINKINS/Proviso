@@ -88,10 +88,10 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
       elif result != "CompilerError" and result != "RuntimeError":
         set_up(code, class_loc, correct, method, utils)
         #TODO for testing, replace with call to learner
-        pre = learnPreconditionForExceptions(prob, put, mut)[0]
+        pre = 'false' # learnPreconditionForExceptions(prob, put, mut)[0]
         groups = group_by_pre(sub, curr_stu, pre, groups)
 
-        create_dir(groups[1])
+        write_result_file(groups[1])
 
         
 def set_up(code, class_loc, correct, method, utils):
@@ -139,26 +139,20 @@ def group_by_pre(sub, curr_stu, pre, groups):
   return (student_dic, sub_dic)
 
 
-def create_dir(preconditions):
-  for pre in preconditions:
-    for sub_idx in range(len(preconditions[pre])):
-      # problem = sub['question']
-      # write_files(problem, student, result, problems[problem][student][result])
-      write_files(pre, preconditions[pre][sub_idx], sub_idx)
-
-
-def write_files(pre, sub, idx):
-  sub_str = json.dumps(sub)
-  sub_path = 'sub' + str(idx) + ".json"
-
-  path = os.path.join('preconditions', pre, sub_path)
-  basedir = os.path.dirname(path)
-
-  if not os.path.exists(basedir):
-      os.makedirs(basedir)
-  
+def write_result_file(preconditions):
+  file_name = "clusters.txt"
+  path = os.path.abspath(file_name)
   with open(path, 'w') as f:
-    f.write(sub_str)
+    for pre in preconditions:
+      to_write = f"precondition: {pre}\n"
+      submissions = preconditions[pre]
+      for sub_idx in range(len(submissions)):
+        sub = submissions[sub_idx]
+        to_write += f"student: {sub['user']} {sub['timestamp']}\n"
+        # FILE:
+        # precondition: OldCount <=1
+        # student: fasf@illinois.edu Timestamp: 4327892
+      f.write(to_write)
 
 
 if __name__ == "__main__":
