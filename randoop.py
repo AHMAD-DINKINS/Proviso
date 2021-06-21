@@ -46,7 +46,7 @@ class Randoop(Teacher):
                 if "EXIT" in lines[line_idx] and not "ppt" in lines[line_idx]:
                     pos_of_exit.append(line_idx)
             if len(pos_of_exit) == 0:
-                print("COULD NOT FIND EXIT FOR VALUES") 
+                print("COULD NOT FIND DATA FOR EXIT POINTS") 
                 continue
             #truncate lines to make easier to iterate over
             test_label=None
