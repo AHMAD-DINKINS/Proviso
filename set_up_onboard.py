@@ -88,6 +88,8 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
       elif result != "CompilerError" and result != "RuntimeError":
         set_up(code, class_loc, correct, method, utils)
         #TODO for testing, replace with call to learner
+        pre = ""
+        rounds = 0
         output = ('false',0) # learnPreconditionForExceptions(prob, put, mut)
         pre = output[0]
         rounds = output[1]
