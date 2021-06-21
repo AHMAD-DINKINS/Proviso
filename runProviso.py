@@ -88,8 +88,9 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     (intBaseFeatures, boolBaseFeatures) = Featurizer.getIntAndBoolFeatures(baseFeatures)
 
     inst  = InstrumenterJava("mvn compile", "")
-    teacher = Evosuite("scripts/run_evosuite.sh", [])
-    #teacher = Randoop("scripts/run_randoop.sh", [])
+    teacherEvo = Evosuite("scripts/run_evosuite.sh", [])
+    teacherRand = Randoop("scripts/run_randoop.sh", []) 
+
     directoryToStoreLearnerFiles = "tempLocation"
     
     learner = DTLearner("dtlearner", "learners/C50exact/c5.0dbg", ['-I 1', '-m 1', '-f' ],directoryToStoreLearnerFiles, \
@@ -107,18 +108,24 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
         inst.instrumentPre(problem, precondition, putName)
         inst.remove_assumes(problem.testFileNamePath,putName)
         inst.remove_assumes(problem.classUnderTestFile, mut)#TODO: will need to implement assume for exception failures in larger programs
-        negFv: List[FeatureVector] = teacher.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
-        
+        #negFv: List[FeatureVector] = teacherEvo.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
+        #negFvRand: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
+        negFv: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
+        #negFv.extend(negFvRand)
+
         inst.instrumentPre(problem,"!("+ precondition+")", putName)
         inst.insert_assumes(problem.testFileNamePath,putName)
         inst.insert_assumes(problem.classUnderTestFile, mut)
-        posFv: List[FeatureVector] = teacher.RunTeacher(problem, putName, baseFeatures, "PRE", "POS" )
-        
+        #posFv: List[FeatureVector] = teacherEvo.RunTeacher(problem, putName, baseFeatures, "PRE", "POS" )
+        #posFvR: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "POS" )
+        posFv: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "POS" )
+        #posFv.extend(posFvR)
+
         fvs: List[FeatureVector] =  negFv + posFv
         
         resolver.addSamplesAndResolveConflicts(fvs)
         finalFvs: List[FeatureVector] = resolver.getSamples()
-        #TODO: check for consistency with precondition and finalFvs, and base features
+        
         consistent = isConsistent(precondition,baseFeatures,finalFvs)
         
         if consistent:
