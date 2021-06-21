@@ -99,7 +99,7 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     learner.generateInputLanguageFile("pre.names")
     #TODO remind to clean up tempLocation after done
     precondition = "true"
-    rounds = 0
+    rounds = 1
     resolver = ConflictResolver()
     fvs=[]
     allPreconditions = []
