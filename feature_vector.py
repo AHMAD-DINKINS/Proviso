@@ -44,6 +44,7 @@ class FeatureVector:
             print("debug branch") # TODO: should remove this from this part to the pex.py
             value = 'True'
         self.CheckValueType(precisFeatureZ3, value)
+        
         if is_int(precisFeatureZ3):
             self.valuesZ3 += (IntVal(value), )
             self.values += (value,)
@@ -111,7 +112,7 @@ class FeatureVector:
     # definition of equality is just to check the contents of feature vectors, comparison of labels must be done elsewhere
     def __eq__(self, other): 
         return hasattr(other, 'valuesZ3') and hasattr(other, 'values') \
-             and self.valuesZ3 == other.valuesZ3 # tuple equiality
+             and self.values == other.values # tuple equiality
 
     def __hash__(self):
         return hash(self.valuesZ3)
