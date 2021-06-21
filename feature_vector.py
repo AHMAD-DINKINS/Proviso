@@ -61,7 +61,8 @@ class FeatureVector:
         if not isinstance(fv, FeatureVector):
             assert False, "type of parameter fv is not FeatureVector"
         else:
-            newFV = FeatureVector([], [], str(fv.testLabel))
+            exampleLabel = "NEG" if not fv.testLabel else "POS"
+            newFV = FeatureVector([], [], fv.testLabel, exampleLabel)
             newFV.values = tuple(fv.values)
             newFV.valuesZ3 = tuple(fv.valuesZ3)
             return newFV
