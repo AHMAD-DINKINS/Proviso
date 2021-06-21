@@ -44,15 +44,16 @@ class DTLearner(ExternalLearner):
             with open(os.path.join(self.fullPathLocation, 'pre.data'), 'wt') as f_out:
                 csv_out = csv.writer(f_out)
                 for item in dataPoints:
-                    csv_out.writerow(item.values+(self.pythonToCSData(item.counterexampleLabel),))
+                    #TODO: this is terrible. either values should be in lower case or upper but need to make better decisions.
+                    fvVals = [item.values[idx].lower() for idx in range(len(item.values)) ]
+                    tupleFvVals = tuple(fvVals)
+                    csv_out.writerow(tupleFvVals+(self.pythonToCSData(item.counterexampleLabel),))
         except Exception as e:
             raise Exception(str(e) + ": " + "error creating data file line 49, dtlearner.py")
 
+    
 
-    def runLearner(self):
-        command_runner.runCommand(self.set_c50_args())
-        output = self.readResults()
-        pass
+    
 
     def generateInputLanguageFile(self, nameOfFile:str):
         fileContents= self.generateFileLinearExpressionsBools()
@@ -102,8 +103,19 @@ class DTLearner(ExternalLearner):
                             " ".join(self.parameters)+ " "+ self.fullPathLocation+'/pre' ])
         return  result
 
-
+    def removeTempFiles(self, files:List[str]):
+        try:
+            for f in os.listdir(self.fullPathLocation):
+                if f in files:
+                    os.remove(os.path.join(self.fullPathLocation, f))
+        except Exception as e:
+            print(str(e))
+            raise Exception(str(e))
+    
     def runLearner(self):
+        #TODO: make param for constructor
+        self.removeTempFiles(["pre.tmp","pre.tree", "pre.out", "pre.json"])
+
         command_runner.runCommand(self.set_c50_args())
         output = self.readResults()
         return output
