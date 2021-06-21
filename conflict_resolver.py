@@ -13,7 +13,7 @@ class ConflictResolver:
         uniquePairs = set()
         for index in range(0, len(fvs)):
             uniquePairs.add((fvs[index],fvs[index].counterexampleLabel))
-        
+        #TODO just loop over uniquePair and add to list
         unique = { fv for (fv,l) in uniquePairs}
 
         return list(unique)
@@ -43,12 +43,16 @@ class ConflictResolver:
                 if s == sfv:
                     match= True
                     if s.counterexampleLabel == True and label:
-                        s.counterexampleLabel = True
+                        #s.counterexampleLabel = True
+                        break
                     elif s.counterexampleLabel == True and not label:
                         print("how rare is this case? ")
                         s.counterexampleLabel = False
+                        break
                     elif s.counterexampleLabel == False:
-                        s.counterexampleLabel = False
+                        #s.counterexampleLabel = False
+                        break
+
             if not match:
                     toAdd.append(sfv)
         
