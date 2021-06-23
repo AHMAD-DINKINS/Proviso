@@ -58,6 +58,7 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
   #   if problem != 'Sp18_Q11_10':
   #     continue
     # might want to sort by time stamp
+  exceptions = {}
   for student in students:
     # submissions = problems[problem][student]
     curr_stu = students[student]
@@ -88,14 +89,34 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
       elif result != "CompilerError" and result != "RuntimeError":
         set_up(code, class_loc, correct, method, utils)
         #TODO for testing, replace with call to learner
-        pre = ""
-        rounds = 0
-        output = ('false',0) # learnPreconditionForExceptions(prob, put, mut)
-        pre = output[0]
-        rounds = output[1]
-        groups = group_by_pre(sub, curr_stu, pre, groups)
+        try:
+          pre = ""
+          rounds = 0
+          output = learnPreconditionForExceptions(prob, put, mut)
+          pre = output[0]
+          rounds = output[1]
+          groups = group_by_pre(sub, curr_stu, pre, groups)
 
-        write_result_file(groups[1])
+          write_result_file(groups[1])
+        except:
+          student = sub['user']
+          if not student in exceptions:
+            exceptions[sub['user']] = [sub]
+          else:
+            exceptions[sub['user']].append(sub)
+          continue
+    
+  write_exceptions(exceptions)
+
+
+def write_exceptions(exceptions):
+  file_name = "exceptions.txt"
+
+  with open(file_name, 'w') as f:
+    for student in exceptions:
+      for excep in exceptions[student]:
+        line = f"student: {student} question: {excep['question']} timestamp: {excep['timestamp']}\n"
+      f.write(line)
 
         
 def set_up(code, class_loc, correct, method, utils):
