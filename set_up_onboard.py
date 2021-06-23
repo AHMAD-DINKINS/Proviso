@@ -5,7 +5,7 @@ from problem import Problem
 from runProviso import learnPreconditionForExceptions
 import re
 from student import Student
-
+import time
 
 def parse(submissions):
     # A lot of this will change since I no longer need problems_dict TODO refactor
@@ -63,8 +63,9 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
     # submissions = problems[problem][student]
     curr_stu = students[student]
     submissions = curr_stu.get_submissions()
-    if len(submissions) >= 4:
-      submissions = submissions[-4:]
+    #if len(submissions) >= 4: TODO: not yet know how to filter submission to execute
+    #  submissions = submissions[-4:]
+    
     # for sub in submissions:
       
       #TODO specific to 125 find different way to skip files that don't compile
@@ -88,16 +89,17 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
         continue
       elif result != "CompilerError" and result != "RuntimeError":
         set_up(code, class_loc, correct, method, utils)
-        #TODO for testing, replace with call to learner
         try:
           pre = ""
           rounds = 0
+          startTime = time.time()
           output = learnPreconditionForExceptions(prob, put, mut)
+          endtime = time.time() - startTime
           pre = output[0]
           rounds = output[1]
           groups = group_by_pre(sub, curr_stu, pre, groups)
-
-          write_result_file(groups[1])
+          #TODO: Ahmad pickle the dicts in groups. 
+          write_result_file(groups[1], endtime)
         except:
           student = sub['user']
           if not student in exceptions:
@@ -164,7 +166,7 @@ def group_by_pre(sub, curr_stu, pre, groups):
   return (student_dic, sub_dic)
 
 
-def write_result_file(preconditions):
+def write_result_file(preconditions, time):
   file_name = "clusters.txt"
   path = os.path.abspath(file_name)
   with open(path, 'w') as f:
@@ -173,11 +175,12 @@ def write_result_file(preconditions):
       submissions = preconditions[pre]
       for sub_idx in range(len(submissions)):
         sub = submissions[sub_idx]
-        to_write += f"student: {sub['user']} {sub['timestamp']}\n"
+        to_write += f"student: {sub['user']} {sub['timestamp']} time: {time}\n"
         # FILE:
         # precondition: OldCount <=1
         # student: fasf@illinois.edu Timestamp: 4327892
       f.write(to_write)
+
 
 
 if __name__ == "__main__":
