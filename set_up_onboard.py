@@ -89,7 +89,7 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
       problem = sub['question']
       if problem != 'Sp18_Q11_10':
         continue
-      elif result != "CompilerError" and result != "RuntimeError":
+      elif result != "CompilerError" :
         set_up(code, class_loc, correct, method, utils)
         try:
           pre = ""
