@@ -135,6 +135,9 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
             print("found ideal precondition")
             print(precondition) 
             return precondition, rounds
+        if rounds == 10:
+            print("timeout: Reached limit")
+            return precondition, rounds
 
         latestPre = learner.learn(finalFvs)
             
