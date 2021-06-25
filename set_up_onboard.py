@@ -7,6 +7,7 @@ from runProviso import learnPreconditionForExceptions
 import re
 from student import Student
 import time
+import sys
 
 def parse(submissions):
     # A lot of this will change since I no longer need problems_dict TODO refactor
@@ -104,14 +105,15 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
           pickle.dump(groups[1], open("pre_to_sub.p", "wb"))
           write_result_file(groups[1], endtime)
         except:
+          e = sys.exc_info()[0]
           student = sub['user']
           if not student in exceptions:
-            exceptions[sub['user']] = [sub]
+            exceptions[sub['user']] = [(sub,e)]
           else:
-            exceptions[sub['user']].append(sub)
+            exceptions[sub['user']].append( (sub, e))
           continue
     
-  write_exceptions(exceptions)
+  write_exceptions(exceptions, e)
 
 
 def write_exceptions(exceptions):
@@ -119,8 +121,8 @@ def write_exceptions(exceptions):
 
   with open(file_name, 'w') as f:
     for student in exceptions:
-      for excep in exceptions[student]:
-        line = f"student: {student} question: {excep['question']} timestamp: {excep['timestamp']}\n"
+      for (excep, e) in exceptions[student]:
+        line = f"student: {student} question: {excep['question']} timestamp: {excep['timestamp']} message: {e}\n"
       f.write(line)
 
         
