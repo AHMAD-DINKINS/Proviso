@@ -34,7 +34,7 @@ class Teacher:
         self.binary = binary
         self.arguments = arguments
         self.time = 0.0
-        self.exceptionsSeen = []
+        self.exceptionsSeen = set()
         
     def runTeacher(self, problem, PUTName, precisFeatureList, preOrPost, kindOfData):
         pass
@@ -58,10 +58,10 @@ class Teacher:
                 if failure is not None:
                     type_of_exception = failure.get('type')
                     if not 'AssumptionViolated' in type_of_exception:
-                        self.exceptionsSeen.append(type_of_exception)
+                        self.exceptionsSeen.add(type_of_exception)
                 elif error is not None:
                     type_of_exception = error.get('type')
                     if not 'AssumptionViolated' in type_of_exception:
-                        self.exceptionsSeen.append(type_of_exception)
+                        self.exceptionsSeen.add(type_of_exception)
 
 
