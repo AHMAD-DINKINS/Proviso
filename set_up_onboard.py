@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import pickle
 from problem import Problem
 from runProviso import learnPreconditionForExceptions
 import re
@@ -98,7 +99,9 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
           pre = output[0]
           rounds = output[1]
           groups = group_by_pre(sub, curr_stu, pre, groups)
-          #TODO: Ahmad pickle the dicts in groups. 
+          # dumping dictionaries with pickle
+          pickle.dump(groups[0], open("pre_to_stu.p", "wb"))
+          pickle.dump(groups[1], open("pre_to_sub.p", "wb"))
           write_result_file(groups[1], endtime)
         except:
           student = sub['user']
