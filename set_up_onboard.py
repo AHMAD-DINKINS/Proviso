@@ -113,7 +113,7 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
             exceptions[sub['user']].append( (sub, e))
           continue
     
-  write_exceptions(exceptions, e)
+  write_exceptions(exceptions)
 
 
 def write_exceptions(exceptions):
