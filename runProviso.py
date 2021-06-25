@@ -134,7 +134,7 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
             inst.remove_assumes(problem.classUnderTestFile, mut)
             print("found ideal precondition")
             print(precondition) 
-            return latestPre, rounds
+            return precondition, rounds
 
         latestPre = learner.learn(finalFvs)
             
