@@ -103,7 +103,7 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
           # dumping dictionaries with pickle
           pickle.dump(groups[0], open("pre_to_stu.p", "wb"))
           pickle.dump(groups[1], open("pre_to_sub.p", "wb"))
-          write_result_file(groups[1], endtime)
+          write_result_file(groups[1], endtime, rounds)
         except:
           e = sys.exc_info()[0]
           student = sub['user']
@@ -171,7 +171,7 @@ def group_by_pre(sub, curr_stu, pre, groups):
   return (student_dic, sub_dic)
 
 
-def write_result_file(preconditions, time):
+def write_result_file(preconditions, time, rounds):
   file_name = "clusters.txt"
   path = os.path.abspath(file_name)
   with open(path, 'w') as f:
@@ -180,7 +180,7 @@ def write_result_file(preconditions, time):
       submissions = preconditions[pre]
       for sub_idx in range(len(submissions)):
         sub = submissions[sub_idx]
-        to_write += f"student: {sub['user']} {sub['timestamp']} time: {time}\n"
+        to_write += f"student: {sub['user']} {sub['timestamp']} time: {time} rounds: {rounds}\n"
         # FILE:
         # precondition: OldCount <=1
         # student: fasf@illinois.edu Timestamp: 4327892
