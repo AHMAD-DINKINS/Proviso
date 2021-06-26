@@ -1,0 +1,13 @@
+precondition: false
+student: mfeng22@illinois.edu 1524243930 time: 1169.487829208374 rounds: 1
+student: derektd2@illinois.edu 1524244124 time: 1169.487829208374 rounds: 1
+precondition: true
+student: mfeng22@illinois.edu 1524244191 time: 1169.487829208374 rounds: 1
+student: derektd2@illinois.edu 1524244203 time: 1169.487829208374 rounds: 1
+student: yangm2@illinois.edu 1524244220 time: 1169.487829208374 rounds: 1
+student: dbumpus2@illinois.edu 1524244568 time: 1169.487829208374 rounds: 1
+student: dbumpus2@illinois.edu 1524244645 time: 1169.487829208374 rounds: 1
+student: xingyub2@illinois.edu 1524244388 time: 1169.487829208374 rounds: 1
+precondition: ((OldCount <= 1))
+student: haoming5@illinois.edu 1524244385 time: 1169.487829208374 rounds: 1
+student: haoming5@illinois.edu 1524244455 time: 1169.487829208374 rounds: 1
