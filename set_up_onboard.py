@@ -2,12 +2,16 @@ import argparse
 import json
 import os
 import pickle
+from subprocess import run
 from problem import Problem
 from runProviso import learnPreconditionForExceptions
 import re
 from student import Student
 import time
 import sys
+import command_runner
+from custom_exceptions import CompilerError
+from traceback import extract_tb, extract_stack
 
 def parse(submissions):
     # A lot of this will change since I no longer need problems_dict TODO refactor
@@ -54,6 +58,10 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
 
   groups = None
   problems, students = parse(submissions)
+  submissions_proccessed = 0
+  skipped = 0
+  error = 0
+  ran = 0
   #TODO set up needs to init the pair program as well for different problems
   # for problem in problems:
   #   # for testing list
@@ -83,37 +91,53 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
         # if length_of_subs >=3:
         #   submissions_to_run.append(submissions_under_result[length_of_subs // 2])
     for sub in submissions:
+      submissions_proccessed += 1
       #TODO json might not be the same for different universities, change this or require same json structure
       result = sub['result']
       code = sub['code']
       problem = sub['question']
-      if problem != 'Sp18_Q11_10':
-        continue
-      elif result != "CompilerError" :
-        set_up(code, class_loc, correct, method, utils)
-        try:
-          pre = ""
-          rounds = 0
-          startTime = time.time()
-          output = learnPreconditionForExceptions(prob, put, mut)
-          endtime = time.time() - startTime
-          pre = output[0]
-          rounds = output[1]
-          groups = group_by_pre(sub, curr_stu, pre, groups)
-          # dumping dictionaries with pickle
-          pickle.dump(groups[0], open("pre_to_stu.p", "wb"))
-          pickle.dump(groups[1], open("pre_to_sub.p", "wb"))
-          write_result_file(groups[1], endtime, rounds)
-        except:
-          e = sys.exc_info()[0]
-          student = sub['user']
-          if not student in exceptions:
-            exceptions[sub['user']] = [(sub,e)]
-          else:
-            exceptions[sub['user']].append( (sub, e))
+      try:
+        if problem != 'Sp18_Q11_10':
+          skipped += 1
           continue
+        elif result != "CompilerError":
+          set_up(code, class_loc, correct, method, utils)
+          if result == "CheckstyleError" or result == "NoScore" or result == "GradingFailure":
+            compile_output = command_runner.runCommand("cd ../onboard; mvn compile")
+            if not "BUILD SUCCESS" in compile_output:
+              error += 1
+              raise CompilerError("Submission did not compile with maven")
+          ran += 1
+          output, endtime = run_learner(prob, put, mut)
+          counts = submissions_proccessed, skipped, error, ran
+          cluster(output, endtime, sub, curr_stu, groups, counts)
+      except:
+        e_type, e_value, e_traceback = sys.exc_info()
+        student = sub['user']
+        if not student in exceptions:
+          exceptions[sub['user']] = [(sub, e_traceback)]
+        else:
+          exceptions[sub['user']].append( (sub, e_traceback))
+        continue
     
   write_exceptions(exceptions)
+
+
+def run_learner(prob, put, mut):
+  startTime = time.time()
+  output = learnPreconditionForExceptions(prob, put, mut)
+  endtime = time.time() - startTime
+  return (output, endtime)
+
+
+def cluster(output, endtime, sub, curr_stu, groups, counts):
+  pre = output[0]
+  rounds = output[1]
+  groups = group_by_pre(sub, curr_stu, pre, groups)
+  # dumping dictionaries with pickle
+  # pickle.dump(groups[0], open("pre_to_stu.p", "wb"))
+  # pickle.dump(groups[1], open("pre_to_sub.p", "wb"))
+  write_result_file(groups[1], endtime, rounds, counts)
 
 
 def write_exceptions(exceptions):
@@ -122,7 +146,7 @@ def write_exceptions(exceptions):
   with open(file_name, 'w') as f:
     for student in exceptions:
       for (excep, e) in exceptions[student]:
-        line = f"student: {student} question: {excep['question']} timestamp: {excep['timestamp']} message: {e}\n"
+        line = f"student: {student} question: {excep['question']} timestamp: {excep['timestamp']} message: {extract_stack()}\n"
       f.write(line)
 
         
@@ -171,10 +195,12 @@ def group_by_pre(sub, curr_stu, pre, groups):
   return (student_dic, sub_dic)
 
 
-def write_result_file(preconditions, time, rounds):
+def write_result_file(preconditions, time, rounds, counts):
+  total, skipped, error, ran = counts
   file_name = "clusters.txt"
   path = os.path.abspath(file_name)
   with open(path, 'w') as f:
+    f.write(f"Total submissions processed: {total}, skipped: {skipped}, error: {error}, ran: {ran}\n")
     for pre in preconditions:
       to_write = f"precondition: {pre}\n"
       submissions = preconditions[pre]
