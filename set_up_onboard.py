@@ -111,13 +111,14 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
           counts = submissions_proccessed, skipped, error, ran
           groups = cluster(output, endtime, sub, curr_stu, groups, counts)
       except:
+        stack = extract_stack()
         error += 1
-        e_type, e_value, e_traceback = sys.exc_info()
+        # e_type, e_value, e_traceback = sys.exc_info()
         student = sub['user']
         if not student in exceptions:
-          exceptions[sub['user']] = [(sub, e_traceback)]
+          exceptions[sub['user']] = [(sub, stack)]
         else:
-          exceptions[sub['user']].append( (sub, e_traceback))
+          exceptions[sub['user']].append((sub, stack))
         continue
     
   write_exceptions(exceptions)
@@ -133,11 +134,11 @@ def run_learner(prob, put, mut):
 def cluster(output, endtime, sub, curr_stu, groups, counts):
   pre = output[0]
   rounds = output[1]
-  groups = group_by_pre(sub, curr_stu, pre, groups)
+  groups = group_by_pre(sub, curr_stu, pre, groups, endtime)
   # dumping dictionaries with pickle
   # pickle.dump(groups[0], open("pre_to_stu.p", "wb"))
   # pickle.dump(groups[1], open("pre_to_sub.p", "wb"))
-  write_result_file(groups[1], endtime, rounds, counts)
+  write_result_file(groups[1], rounds, counts)
   return groups
 
 
@@ -146,8 +147,8 @@ def write_exceptions(exceptions):
 
   with open(file_name, 'w') as f:
     for student in exceptions:
-      for (excep, e) in exceptions[student]:
-        line = f"student: {student} question: {excep['question']} timestamp: {excep['timestamp']} message: {extract_stack()}\n"
+      for (sub, stack) in exceptions[student]:
+        line = f"student: {student} question: {sub['question']} timestamp: {sub['timestamp']} message: {stack}\n"
       f.write(line)
 
         
@@ -180,10 +181,11 @@ def set_up(code, class_loc, correct, method, utils):
 
 
 #only group code that compiles
-def group_by_pre(sub, curr_stu, pre, groups):
+def group_by_pre(sub, curr_stu, pre, groups, time):
   # student_dic for analysis
   student_dic, sub_dic = groups if groups else ({},{})
   sub['precondition'] = pre
+  sub['learn_time'] = time
   if pre in sub_dic:
     sub_dic[pre].append(sub)
   else:
@@ -196,7 +198,7 @@ def group_by_pre(sub, curr_stu, pre, groups):
   return (student_dic, sub_dic)
 
 
-def write_result_file(preconditions, time, rounds, counts):
+def write_result_file(preconditions, rounds, counts):
   total, skipped, error, ran = counts
   file_name = "clusters.txt"
   path = os.path.abspath(file_name)
@@ -207,7 +209,7 @@ def write_result_file(preconditions, time, rounds, counts):
       submissions = preconditions[pre]
       for sub_idx in range(len(submissions)):
         sub = submissions[sub_idx]
-        to_write += f"student: {sub['user']} timestamp: {sub['timestamp']} time: {time} rounds: {rounds}\n"
+        to_write += f"student: {sub['user']} timestamp: {sub['timestamp']} time: {sub['learn_time']} rounds: {rounds}\n"
         # FILE:
         # precondition: OldCount <=1
         # student: fasf@illinois.edu Timestamp: 4327892
