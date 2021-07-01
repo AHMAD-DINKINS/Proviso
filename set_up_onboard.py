@@ -105,13 +105,13 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
           if result == "CheckstyleError" or result == "NoScore" or result == "GradingFailure":
             compile_output = command_runner.runCommand("cd ../onboard; mvn compile")
             if not "BUILD SUCCESS" in compile_output:
-              error += 1
               raise CompilerError("Submission did not compile with maven")
-          ran += 1
           output, endtime = run_learner(prob, put, mut)
+          ran += 1
           counts = submissions_proccessed, skipped, error, ran
-          cluster(output, endtime, sub, curr_stu, groups, counts)
+          groups = cluster(output, endtime, sub, curr_stu, groups, counts)
       except:
+        error += 1
         e_type, e_value, e_traceback = sys.exc_info()
         student = sub['user']
         if not student in exceptions:
@@ -138,6 +138,7 @@ def cluster(output, endtime, sub, curr_stu, groups, counts):
   # pickle.dump(groups[0], open("pre_to_stu.p", "wb"))
   # pickle.dump(groups[1], open("pre_to_sub.p", "wb"))
   write_result_file(groups[1], endtime, rounds, counts)
+  return groups
 
 
 def write_exceptions(exceptions):
@@ -206,7 +207,7 @@ def write_result_file(preconditions, time, rounds, counts):
       submissions = preconditions[pre]
       for sub_idx in range(len(submissions)):
         sub = submissions[sub_idx]
-        to_write += f"student: {sub['user']} {sub['timestamp']} time: {time} rounds: {rounds}\n"
+        to_write += f"student: {sub['user']} timestamp: {sub['timestamp']} time: {time} rounds: {rounds}\n"
         # FILE:
         # precondition: OldCount <=1
         # student: fasf@illinois.edu Timestamp: 4327892
