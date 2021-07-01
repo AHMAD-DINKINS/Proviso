@@ -70,6 +70,7 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
     # might want to sort by time stamp
   exceptions = {}
   for student in students:
+    print("evaluating student: "+f"{student}")
     # submissions = problems[problem][student]
     curr_stu = students[student]
     submissions = curr_stu.get_submissions()
@@ -91,6 +92,7 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
         # if length_of_subs >=3:
         #   submissions_to_run.append(submissions_under_result[length_of_subs // 2])
     for sub in submissions:
+      print("evaluating student: "+f"{sub['timestamp']}")
       submissions_proccessed += 1
       #TODO json might not be the same for different universities, change this or require same json structure
       result = sub['result']
