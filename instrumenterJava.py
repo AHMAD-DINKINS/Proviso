@@ -40,17 +40,17 @@ class InstrumenterJava:
         with open(problem.testFileNamePath) as f:
             lines = f.readlines()
         PUTnameSeen = False
-        observersSeen = False
+        assumeCount = 0
         for line_idx in range(len(lines)):
             if PUTname in lines[line_idx]:
                 PUTnameSeen = True
             if PUTnameSeen:
-                if "Old" in lines[line_idx] and not "assumeTrue" in lines[line_idx]:
-                    observersSeen = True
-                elif observersSeen and "assumeTrue" in lines[line_idx]:
-                    oldPreCon = re.search(r'assumeTrue\(([\s\S]*)\);', lines[line_idx]).groups()[0]
-                    lines[line_idx] = lines[line_idx].replace(oldPreCon, precondition)
-                    break
+                if "assumeTrue" in lines[line_idx]:
+                    assumeCount += 1
+                    if assumeCount > 1:
+                        oldPreCon = re.search(r'assumeTrue\(([\s\S]*)\);', lines[line_idx]).groups()[0]
+                        lines[line_idx] = lines[line_idx].replace(oldPreCon, precondition)
+                        break
         
         with open(problem.testFileNamePath, 'w') as f:
             f.write("".join(lines))
