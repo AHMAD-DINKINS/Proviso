@@ -34,26 +34,18 @@ def getFeaturesJava(p: Problem, putName,featuresFileName):
     with open(p.testFileNamePath) as f:
         lines = f.readlines()
 
-    declared_observers = {}
-    observers_to_write = []
-    tagSeen = False
+    observers = {}
     for line in lines:
-        if "Features" in line:
-            tagSeen = True
-        if tagSeen:
-            # only add observers used in put
-            if "Old" in line and not "assumeTrue" in line:
-                observer = re.search(r"(Old[a-zA-Z]+)", line).groups()[0]
-                if observer in declared_observers:
-                    observers_to_write.append(observer)
-                else:
-                    type_info, observer = re.search(r"public ([a-zA-Z]+) (Old[a-zA-Z]+)", line).groups()
-                    declared_observers[observer] = type_info
+        # only add observers used in put
+        if "Old" in line and not "assumeTrue" in line:
+            observer = re.search(r"(Old[a-zA-Z]+)", line).groups()[0]
+            type_info, observer = re.search(r"public ([a-zA-Z]+) (Old[a-zA-Z]+)", line).groups()
+            observers[observer] = type_info
     # write the observers
     with open(featuresFileName, 'w') as f:
-        for ob in observers_to_write:
+        for ob in observers:
             # truncate ending for "boolean" for observer reader 
-            typ = declared_observers[ob].replace("ean", "")
+            typ = observers[ob].replace("ean", "")
             f.write(ob + " " + typ + "\n")
 
 
@@ -106,7 +98,7 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     while True:
         
         inst.instrumentPre(problem, precondition, putName)
-        inst.remove_assumes(problem.testFileNamePath,putName)
+        inst.remove_assumes(problem.testFileNamePath,putName)#TODO: lines 101-104 can be it's own method in teacher code called get_negative_examples
         inst.remove_assumes(problem.classUnderTestFile, mut)#TODO: will need to implement assume for exception failures in larger programs
         negFv: List[FeatureVector] = teacherEvo.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
         negFvRand: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
