@@ -45,6 +45,80 @@ class Teacher:
     def getExceptionsSeen(self):
         return self.exceptionsSeen
 
+    # This class needs redesigning because pex must be parsed differently 
+    def parseTrace(self, precisFeatureList, example_label):
+        dir_of_trace = "../onboard/"
+        dataPoints = []
+        trace_file_names = os.listdir(dir_of_trace)
+        trace_file_names = [file_name for file_name in trace_file_names if example_label in file_name]
+        for file_name in trace_file_names:
+            file_name = dir_of_trace + file_name
+
+            with open(file_name) as f:
+                lines = f.readlines()
+
+            # find the exit for the values, assuming it is after delcaration exits
+            pos_of_first_enter = -1
+            for line_idx in range(len(lines)):
+                if "ENTER" in lines[line_idx] and not "ppt" in lines[line_idx]:
+                    pos_of_first_enter = line_idx
+                    break
+            if pos_of_first_enter < 0:
+                # print("EMPTY TRACE FILE") 
+                continue
+            new_lines = lines[pos_of_first_enter:]
+            points = self.collect_points(new_lines)
+
+            #truncate lines to make easier to iterate over
+            test_label=None
+            for key in range(0, len(points), 2):
+                values = []
+                # reading exit of wrapper for this.safe
+                read_exit = points[key][1].split("\n")
+                # reading enter of inner put
+                read_enter = points[key + 1][0].split("\n")
+                for line_idx in range(len(read_enter)):
+                    if "Old" in read_enter[line_idx]:
+                        value = read_enter[line_idx + 1].strip()
+                        if value == 'true' or value == 'false':
+                            value = value.capitalize()
+                        values.append(value)
+                for line_idx in range(len(read_exit)):
+                    if "this.safe" in read_exit[line_idx]:
+                        testResult = read_exit[line_idx + 1].strip()
+                        testResult = testResult.capitalize()
+                        test_label = eval(testResult)
+                    # elif new_lines[line_idx] == "\n": #TOOD: consider stopping after safe intead of newlinw
+                    #     break
+
+                vector = FeatureVector(precisFeatureList, values, test_label, example_label)
+                dataPoints.append(vector)
+        self.findExceptions(dir_of_trace + "target/surefire-reports/")
+        return dataPoints
+    
+    def collect_points(self, lines):
+        points = {}
+        key = -1
+        collecting = False
+        point = ""
+        for line_idx in range(len(lines)):
+            if lines[line_idx] == "\n":
+                collecting = False
+                if key in points:
+                    points[key].append(point)
+                else:
+                    points[key] = [point]
+                point = ""
+            elif "ENTER" in lines[line_idx] or "EXIT" in lines[line_idx]:
+                collecting = True
+            if collecting:
+                if "this_invocation_nonce" in lines[line_idx]:
+                    key = int(lines[line_idx + 1].strip())
+                point += lines[line_idx]
+
+        return points
+
+
     def findExceptions(self, report_loc):
         reports = os.listdir(report_loc)
         reports = [r for r in reports if "TEST" in r]
