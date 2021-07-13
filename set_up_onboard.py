@@ -11,6 +11,7 @@ import time
 import sys
 import command_runner
 from custom_exceptions import CompilerError
+import traceback
 from traceback import extract_tb, extract_stack
 
 def parse(submissions):
@@ -97,7 +98,7 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
       code = sub['code']
       problem = sub['question']
       try:
-        if problem != 'Sp18_Q11_10':
+        if problem != 'Sp18_Q11_10' and problem != 'Sp18_Q8_27':
           skipped += 1
           continue
         elif result != "CompilerError":
@@ -107,18 +108,23 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
             if not "BUILD SUCCESS" in compile_output:
               raise CompilerError("Submission did not compile with maven")
           output, endtime = run_learner(prob, put, mut)
+          #restore(class_loc)
           ran += 1
           counts = submissions_proccessed, skipped, error, ran
           groups = cluster(output, endtime, sub, curr_stu, groups, counts)
       except:
         stack = extract_stack()
         error += 1
-        # e_type, e_value, e_traceback = sys.exc_info()
+        e_type, e_value, e_traceback = sys.exc_info()
+        print(e_type)
+        print(e_value)
+        print(e_traceback)
+        tb = traceback.format_exc()
         student = sub['user']
         if not student in exceptions:
-          exceptions[sub['user']] = [(sub, stack)]
+          exceptions[sub['user']] = [(sub, tb)]
         else:
-          exceptions[sub['user']].append((sub, stack))
+          exceptions[sub['user']].append((sub, tb))
         continue
     
   write_exceptions(exceptions)
@@ -137,7 +143,7 @@ def cluster(output, endtime, sub, curr_stu, groups, counts):
   groups = group_by_pre(sub, curr_stu, pre, groups, endtime)
   # dumping dictionaries with pickle
   # pickle.dump(groups[0], open("pre_to_stu.p", "wb"))
-  # pickle.dump(groups[1], open("pre_to_sub.p", "wb"))
+  pickle.dump(groups[1], open("pre_to_sub.p", "wb"))
   write_result_file(groups[1], rounds, counts)
   return groups
 
@@ -162,13 +168,24 @@ def set_up(code, class_loc, correct, method, utils):
 
   to_instrument = "".join(correct_sol_lines) + "\n\n" + "".join(utils_lines)
 
+  # in case code does not have a wrapper class
+  if "class" not in code:
+    with open(class_loc + "PairProgram.java") as f:
+      pair_program = "".join(f.readlines())
+      end_of_pair_program = pair_program.rindex("}")
+      code = pair_program[:end_of_pair_program] + "\n" + code + pair_program[end_of_pair_program]
+
   end_of_class = code.rindex("}")
 
   new_code = code[:end_of_class] + "\n" + to_instrument + code[end_of_class]
 
   method_name = method + "("
 
-  new_code = new_code.replace(method_name, method_name[:-1] + "Stu(")
+  stu_method_name = method_name[:-1] + "Stu("
+  if method_name in new_code:
+    new_code = new_code.replace(method_name, stu_method_name)
+
+  new_code = new_code.replace("public static int ", "private static int ")
 
   pattern = r'class ([a-zA-Z]+)'
   # example so we don't overwrite current files
@@ -178,6 +195,14 @@ def set_up(code, class_loc, correct, method, utils):
   
   with open(name_of_class, 'w') as f:
     f.write(new_code)
+
+def restore(class_loc):
+  with open("./old_pair_program.txt") as f:
+    lines = f.readlines()
+
+  with open(class_loc + "PairProgram.java", 'w') as f:
+    f.write("".join(lines)) 
+
 
 
 #only group code that compiles
@@ -232,7 +257,7 @@ if __name__ == "__main__":
   testDebugFolder = 'Sample/ListTest/bin/Debug/'
   testFileNamePath = os.path.abspath('Sample/ListTest/ListTest.cs')
   javaSolutionFile = ''
-  javaTestProjectName = 'ListTest'
+  javaTestProjectName = 'PairProgram'
   javaTestDebugFolder = ''
   javaTestDll = testDebugFolder + 'ListTest.dll'
   javaTestFileNamePath = os.path.abspath('../onboard/src/main/java/PairProgram.java')
