@@ -95,15 +95,18 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     resolver = ConflictResolver()
     fvs=[]
     allPreconditions = []
+    negFv: List[FeatureVector] = None
+    negFvRand: List[FeatureVector] = None
     while True:
         
-        inst.instrumentPre(problem, precondition, putName)
-        inst.remove_assumes(problem.testFileNamePath,putName)#TODO: lines 101-104 can be it's own method in teacher code called get_negative_examples
-        inst.remove_assumes(problem.classUnderTestFile, mut)#TODO: will need to implement assume for exception failures in larger programs
-        negFv: List[FeatureVector] = teacherEvo.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
-        negFvRand: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
-        #negFv: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
-        negFv.extend(negFvRand)
+        if precondition != 'false':
+            inst.instrumentPre(problem, precondition, putName)
+            inst.remove_assumes(problem.testFileNamePath,putName)#TODO: lines 101-104 can be it's own method in teacher code called get_negative_examples
+            inst.remove_assumes(problem.classUnderTestFile, mut)#TODO: will need to implement assume for exception failures in larger programs
+            negFv: List[FeatureVector] = teacherEvo.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
+            negFvRand: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
+            #negFv: List[FeatureVector] = teacherRand.RunTeacher(problem, putName, baseFeatures, "PRE", "NEG" )
+            negFv.extend(negFvRand)
 
         inst.instrumentPre(problem,"!("+ precondition+")", putName)
         inst.insert_assumes(problem.testFileNamePath,putName)
