@@ -1,4 +1,4 @@
-  public void addToEndRef(final int newValue) {
+public void addToEndRef(final int newValue) {
     if (this.next == null) {
       this.next = new List(newValue);
     } else {

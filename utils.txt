@@ -50,4 +50,3 @@
   public int hashCode() {
     return this.getClass().getName().hashCode() * value;
   }
-  
