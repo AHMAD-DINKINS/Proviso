@@ -1,0 +1,7 @@
+public void addToEndRef(final int newValue) {
+    if (this.next == null) {
+      this.next = new List(newValue);
+    } else {
+      this.next.addToEndRef(newValue);
+    }
+  }
