@@ -95,8 +95,8 @@ def learnPreconditionForExceptions(problem: Problem, putName: str, mut:str):
     resolver = ConflictResolver()
     fvs=[]
     allPreconditions = []
-    negFv: List[FeatureVector] = None
-    negFvRand: List[FeatureVector] = None
+    negFv: List[FeatureVector] = []
+    negFvRand: List[FeatureVector] = []
     while True:
         
         if precondition != 'false':
