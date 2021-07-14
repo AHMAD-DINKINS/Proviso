@@ -102,17 +102,19 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
           skipped += 1
           continue
         elif result != "CompilerError":
+          save(class_loc)
           set_up(code, class_loc, correct, method, utils)
           if result == "CheckstyleError" or result == "NoScore" or result == "GradingFailure":
             compile_output = command_runner.runCommand("cd ../onboard; mvn compile")
             if not "BUILD SUCCESS" in compile_output:
               raise CompilerError("Submission did not compile with maven")
           output, endtime = run_learner(prob, put, mut)
-          #restore(class_loc)
+          restore(class_loc)
           ran += 1
           counts = submissions_proccessed, skipped, error, ran
           groups = cluster(output, endtime, sub, curr_stu, groups, counts)
       except:
+        restore(class_loc)
         stack = extract_stack()
         error += 1
         e_type, e_value, e_traceback = sys.exc_info()
@@ -125,10 +127,8 @@ def main(class_loc, correct, method, utils, submissions, prob, put, mut):
           exceptions[sub['user']] = [(sub, tb)]
         else:
           exceptions[sub['user']].append((sub, tb))
+        write_exceptions(exceptions)
         continue
-    
-  write_exceptions(exceptions)
-
 
 def run_learner(prob, put, mut):
   startTime = time.time()
@@ -195,6 +195,14 @@ def set_up(code, class_loc, correct, method, utils):
   
   with open(name_of_class, 'w') as f:
     f.write(new_code)
+
+
+def save(class_loc):
+  with open(class_loc + "PairProgram.java") as f:
+    lines = f.readlines() 
+
+  with open("./old_pair_program.txt", 'w') as f:
+    f.write("".join(lines))
 
 def restore(class_loc):
   with open("./old_pair_program.txt") as f:
