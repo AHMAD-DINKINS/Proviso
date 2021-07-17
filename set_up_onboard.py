@@ -156,7 +156,8 @@ def write_exceptions(exceptions):
   with open(file_name, 'w') as f:
     for student in exceptions:
       for (sub, stack) in exceptions[student]:
-        line = f"student: {student} question: {sub['question']} timestamp: {sub['timestamp']} message: {stack}\n"
+        timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(sub['timestamp'])))
+        line = f"student: {student} question: {sub['question']} timestamp: {timestamp} message: {stack}\n"
       f.write(line)
 
         
@@ -244,7 +245,8 @@ def write_result_file(preconditions, rounds, counts):
       submissions = preconditions[pre]
       for sub_idx in range(len(submissions)):
         sub = submissions[sub_idx]
-        to_write += f"student: {sub['user']} timestamp: {sub['timestamp']} time: {sub['learn_time']} rounds: {rounds}\n"
+        timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(sub['timestamp'])))
+        to_write += f"student: {sub['user']} timestamp: {timestamp} time: {sub['learn_time']} rounds: {rounds}\n"
         # FILE:
         # precondition: OldCount <=1
         # student: fasf@illinois.edu Timestamp: 4327892
