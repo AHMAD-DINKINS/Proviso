@@ -7,3 +7,11 @@ class CompilerError(CustomError):
   # Raised when there is an error setting up experiments
   def __init__(self, message):
     self.message = message
+
+class TraceMissing(CustomError):
+  def __init__(self, message):
+    self.message = message
+
+class NoExitPoint(CustomError):
+  def __init__(self, message):
+    self.message = message
