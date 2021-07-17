@@ -5,6 +5,7 @@ import os
 import time
 import argparse
 import collections
+import custom_exceptions
 import pprint
 import csv
 import json
@@ -51,6 +52,10 @@ class Teacher:
         dataPoints = []
         trace_file_names = os.listdir(dir_of_trace)
         trace_file_names = [file_name for file_name in trace_file_names if example_label in file_name]
+
+        if len(trace_file_names) == 0:
+            raise custom_exceptions.TraceMissing(f"No {example_label} trace files found...")
+
         for file_name in trace_file_names:
             file_name = dir_of_trace + file_name
 
@@ -70,31 +75,40 @@ class Teacher:
             points = self.collect_points(new_lines)
 
             #truncate lines to make easier to iterate over
-            test_label=None
-            for key in range(0, len(points), 2):
-                values = []
-                # reading exit of wrapper for this.safe
-                read_exit = points[key][1].split("\n")
-                # reading enter of inner put
-                read_enter = points[key + 1][0].split("\n")
-                for line_idx in range(len(read_enter)):
-                    if "Old" in read_enter[line_idx]:
-                        value = read_enter[line_idx + 1].strip()
-                        if value == 'true' or value == 'false':
-                            value = value.capitalize()
-                        values.append(value)
-                for line_idx in range(len(read_exit)):
-                    if "this.safe" in read_exit[line_idx]:
-                        testResult = read_exit[line_idx + 1].strip()
-                        testResult = testResult.capitalize()
-                        test_label = eval(testResult)
-                    # elif new_lines[line_idx] == "\n": #TOOD: consider stopping after safe intead of newlinw
-                    #     break
-
-                vector = FeatureVector(precisFeatureList, values, test_label, example_label)
-                dataPoints.append(vector)
+            vector = self.read_exit(points, precisFeatureList, example_label)
+            dataPoints += vector
         self.findExceptions(dir_of_trace + "target/surefire-reports/")
         return dataPoints
+    
+    def read_exit(self, points, precisFeatureList, example_label):
+        test_label=None
+        data_points = []
+        for key in range(0, len(points), 2):
+            if points[key][1].split("\n") == ['']:
+                enter = points[key][0].split("\n")
+                raise custom_exceptions.NoExitPoint(f"No exit for {enter}...")
+
+            values = []
+            # reading exit of wrapper
+            read_exit = points[key][1].split("\n")
+            # reading enter of inner put
+            # read_enter = points[key + 1][0].split("\n")
+            for line_idx in range(len(read_exit)):
+                if "Old" in read_exit[line_idx]:
+                    value = read_exit[line_idx + 1].strip()
+                    if value == 'true' or value == 'false':
+                        value = value.capitalize()
+                    values.append(value)
+                if "this.safe" in read_exit[line_idx]:
+                    testResult = read_exit[line_idx + 1].strip()
+                    testResult = testResult.capitalize()
+                    test_label = eval(testResult)
+                # elif new_lines[line_idx] == "\n": #TOOD: consider stopping after safe intead of newlinw
+                #     break
+
+            vector = FeatureVector(precisFeatureList, values, test_label, example_label)
+            data_points.append(vector)
+        return data_points
     
     def collect_points(self, lines):
         points = {}
