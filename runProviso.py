@@ -34,18 +34,27 @@ def getFeaturesJava(p: Problem, putName,featuresFileName):
     with open(p.testFileNamePath) as f:
         lines = f.readlines()
 
-    observers = {}
+    declared_observers = {}
+    observers_to_write = []
+    tagSeen = False
     for line in lines:
         # only add observers used in put
-        if "Old" in line and not "assumeTrue" in line:
-            observer = re.search(r"(Old[a-zA-Z]+)", line).groups()[0]
-            type_info, observer = re.search(r"public ([a-zA-Z]+) (Old[a-zA-Z]+)", line).groups()
-            observers[observer] = type_info
+        if "Features" in line:
+            tagSeen = True
+        if tagSeen:
+            # only add observers used in put
+            if "Old" in line and not "assumeTrue" in line:
+                observer = re.search(r"(Old[a-zA-Z]+)", line).groups()[0]
+                if observer in declared_observers:
+                    observers_to_write.append(observer)
+                else:
+                    type_info, observer = re.search(r"public ([a-zA-Z]+) (Old[a-zA-Z]+)", line).groups()
+                    declared_observers[observer] = type_info
     # write the observers
     with open(featuresFileName, 'w') as f:
-        for ob in observers:
+        for ob in observers_to_write:
             # truncate ending for "boolean" for observer reader 
-            typ = observers[ob].replace("ean", "")
+            typ = declared_observers[ob].replace("ean", "")
             f.write(ob + " " + typ + "\n")
 
 
